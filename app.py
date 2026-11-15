@@ -156,7 +156,15 @@ with st.sidebar:
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    st.markdown('<div class="eyebrow" style="color:#FFFFFF!important">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
+    st.html("""<style>
+    .rr-brand-heading, .rr-brand-heading * {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        opacity: 1 !important;
+        filter: none !important;
+    }
+    </style>
+    <div class="rr-brand-heading" style="color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;opacity:1!important;font-family:Outfit,sans-serif;font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;">RAJASTHAN ROYALS · TALENT INTELLIGENCE</div>""")
     st.title('SUPERR SELECTOR')
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
