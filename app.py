@@ -156,7 +156,7 @@ with st.sidebar:
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    st.markdown("""<h1 style="font-family:'Montserrat','Outfit',sans-serif!important;font-size:1.85rem!important;font-weight:800!important;letter-spacing:-0.035em!important;line-height:1.2!important;margin:0 0 0.3rem 0!important;background:linear-gradient(180deg,#FFFFFF 0%,#F9FBFF 38%,#C8D2E3 72%,#FFFFFF 100%)!important;background-clip:text!important;-webkit-background-clip:text!important;color:#FFFFFF!important;-webkit-text-fill-color:transparent!important;text-shadow:0 1px 8px rgba(255,255,255,0.12);">Superr Selector</h1>""",unsafe_allow_html=True)
+    st.markdown("""<h1 style="font-family:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif!important;font-style:italic!important;font-weight:700!important;font-size:1.65rem!important;line-height:1.2!important;letter-spacing:.3px!important;margin:0 0 .3rem 0!important;color:#F5F7FC!important;-webkit-text-fill-color:#F5F7FC!important;text-shadow:0 1px 0 #FFFFFF,0 2px 2px rgba(136,151,176,.65),0 4px 12px rgba(205,218,239,.2)!important;">Superr Selector</h1>""",unsafe_allow_html=True)
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
 cards_slot=st.empty()
