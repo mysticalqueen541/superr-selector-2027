@@ -156,15 +156,8 @@ with st.sidebar:
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    st.html("""<style>
-    .rr-brand-heading, .rr-brand-heading * {
-        color: #FFFFFF !important;
-        -webkit-text-fill-color: #FFFFFF !important;
-        opacity: 1 !important;
-        filter: none !important;
-    }
-    </style>
-    <div class="rr-brand-heading" style="color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;opacity:1!important;font-family:Outfit,sans-serif;font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;">RAJASTHAN ROYALS · TALENT INTELLIGENCE</div>""")
+    # Render the brand heading as SVG: its fill is independent of Streamlit text-theme CSS.
+    st.markdown("""<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="25" viewBox="0 0 550 25" role="img" aria-label="RAJASTHAN ROYALS · TALENT INTELLIGENCE" preserveAspectRatio="xMinYMid meet" style="display:block;overflow:visible;margin-bottom:5px"><text x="0" y="17" fill="#FFFFFF" stroke="none" opacity="1" style="fill:#FFFFFF!important;paint-order:normal;font-family:Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:2px">RAJASTHAN ROYALS · TALENT INTELLIGENCE</text></svg>""", unsafe_allow_html=True)
     st.title('SUPERR SELECTOR')
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
