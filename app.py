@@ -156,7 +156,7 @@ with st.sidebar:
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    st.markdown('<div class="eyebrow">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
+    st.markdown("""<div style="font-family:'Outfit','Montserrat','Arial',sans-serif;font-size:12px;font-weight:800;letter-spacing:2.1px;text-transform:uppercase;color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;text-shadow:0 1px 0 #DCE4F2,0 0 8px rgba(245,248,255,.35);margin-bottom:7px;">SUPERR SELECTOR PRESSURE PERFORMERS</div>""",unsafe_allow_html=True)
     st.title('SUPERR SELECTOR')
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
