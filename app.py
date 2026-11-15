@@ -125,6 +125,15 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 /* Tooltip override comes last to defeat the legacy dark tooltip styling. */
 [data-baseweb="tooltip"],[role="tooltip"],[data-testid="stTooltipContent"]{background:#FFFFFF!important;color:#101010!important}
 [data-baseweb="tooltip"] *,[role="tooltip"] *,[data-testid="stTooltipContent"] *{color:#101010!important}
+
+/* Flat, card-free charts with high-contrast text. Keep KPI cards and tables unchanged. */
+[data-testid="stPlotlyChart"],[data-testid="stPlotlyChart"] > div {
+  background:transparent!important;border:none!important;border-radius:0!important;
+  box-shadow:none!important;padding:0!important;
+}
+.eyebrow,.eyebrow *,.section-head,.chart-heading .section-head,
+.chart-heading .section-caption{color:#FFFFFF!important;opacity:1!important}
+[data-testid="stMarkdownContainer"] .eyebrow{color:#FFFFFF!important}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
@@ -147,7 +156,7 @@ with st.sidebar:
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    st.markdown('<div class="eyebrow">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow" style="color:#FFFFFF!important">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
     st.title('SUPERR SELECTOR')
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
@@ -397,7 +406,7 @@ with main_col:
             with left_chart:
                 chart_heading('Bowling score comparison','Final pressure rating /200 · Top 10')
                 fig=px.bar(top.sort_values('Final /200'),x='Final /200',y='Bowler',orientation='h',color='Pressure /100',color_continuous_scale=['#4667A4','#FF5FA9'])
-                fig.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=405,margin=dict(l=10,r=15,t=35,b=30))
+                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',font_color='#F6F8FF',height=405,margin=dict(l=10,r=15,t=35,b=30))
                 st.plotly_chart(fig,use_container_width=True)
             with right_chart:
                 chart_heading('Bowling performance bubble graph','Bubble size = pressure balls · lower economy is better')
