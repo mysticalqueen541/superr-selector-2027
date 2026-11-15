@@ -156,9 +156,7 @@ with st.sidebar:
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    # Serve the white heading as an image, isolating its fill from Streamlit's CSS.
-    brand_svg = """<svg xmlns="http://www.w3.org/2000/svg" width="390" height="22" viewBox="0 0 390 22"><text x="0" y="15" fill="#FFFFFF" font-family="Arial,sans-serif" font-size="11" font-weight="800" letter-spacing="2">RAJASTHAN ROYALS · TALENT INTELLIGENCE</text></svg>"""
-    st.image(brand_svg.encode("utf-8"), width=390)
+    st.markdown('<div class="eyebrow">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
     st.title('SUPERR SELECTOR')
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
