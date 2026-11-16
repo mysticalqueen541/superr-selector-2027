@@ -134,6 +134,25 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 .eyebrow,.eyebrow *,.section-head,.chart-heading .section-head,
 .chart-heading .section-caption{color:#FFFFFF!important;opacity:1!important}
 [data-testid="stMarkdownContainer"] .eyebrow{color:#FFFFFF!important}
+
+/* Mobile layout: Streamlit's default columns must stack rather than shrink to unreadable slivers. */
+@media screen and (max-width:1100px){
+  html,body,[data-testid="stApp"],[data-testid="stAppViewContainer"]{max-width:100%!important;overflow-x:hidden!important}
+  [data-testid="stMainBlockContainer"],.block-container{width:100%!important;max-width:100%!important;padding:1.1rem .9rem 3rem!important;box-sizing:border-box!important}
+  [data-testid="stHorizontalBlock"]{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:1rem!important;width:100%!important}
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]{flex:1 1 auto!important;width:100%!important;min-width:0!important;max-width:100%!important}
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div{width:100%!important;max-width:100%!important;min-width:0!important}
+  .leader-card{height:auto!important;min-height:100px!important;max-height:none!important;padding:13px 16px!important}
+  .leader-label{font-size:.92rem!important;overflow-wrap:break-word!important}
+  .leader-name{font-size:1.05rem!important;overflow-wrap:break-word!important;max-height:none!important}
+  .leader-score{font-size:1rem!important}
+  .summary-value{font-size:1.65rem!important;white-space:normal!important;overflow-wrap:anywhere!important}
+  .table-wrap{display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .rr-table{min-width:790px!important}
+  [data-testid="stPlotlyChart"]{width:100%!important;max-width:100%!important;overflow:hidden!important}
+  [data-testid="stPlotlyChart"] .js-plotly-plot,[data-testid="stPlotlyChart"] .plot-container{max-width:100%!important}
+  .pressure-card{min-height:0!important;padding:16px!important}
+}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
