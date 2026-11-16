@@ -229,7 +229,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
         t.loc[pool.index,'overall_pressure_rating']=pressure_rating
     else:
         t['overall_pressure_rating']=np.nan
-    t['pressure_rating']=t.overall_pressure_rating
+    t['pressure_rating']=0.60*t.pressure_six_normalized+0.40*t.overall_pressure_rating
     t['pressure_confidence']=t.pressure_balls/(t.pressure_balls+60.0)
     t['v2_component']=0.70*t.v2_normalized
     t['pressure_component']=0.30*t.pressure_rating
