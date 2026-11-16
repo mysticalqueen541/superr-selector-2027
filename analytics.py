@@ -218,7 +218,9 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
     # Retained IPL 2026 players are not treated as IPL retirees; exclude these
     # two from this auction scouting shortlist separately from retirement status.
     t['excluded_retained_players']=t['name'].str.strip().str.casefold().isin({'virat kohli','rohit sharma'})
-    t['excluded']=t['excluded_retirement'] | t['excluded_retained_players'] | ((t['excluded_pakistan'] | t['excluded_bangladesh']) if exclude_pak_bang else False)
+    # Uniform ranking policy: no nationality, retirement or retention exclusions.
+    # Keep audit flags for transparency only; all players face identical sample thresholds.
+    t['excluded']=False
     t=t.reset_index().rename(columns={'striker_id':'player_id'})
     # Cohort-relative percentiles are recomputed for the selected competition and filters.
     # Candidate exclusion never removes opposition deliveries from match statistics.
