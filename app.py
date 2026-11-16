@@ -125,48 +125,6 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 /* Tooltip override comes last to defeat the legacy dark tooltip styling. */
 [data-baseweb="tooltip"],[role="tooltip"],[data-testid="stTooltipContent"]{background:#FFFFFF!important;color:#101010!important}
 [data-baseweb="tooltip"] *,[role="tooltip"] *,[data-testid="stTooltipContent"] *{color:#101010!important}
-
-/* Flat, card-free charts with high-contrast text. Keep KPI cards and tables unchanged. */
-[data-testid="stPlotlyChart"],[data-testid="stPlotlyChart"] > div {
-  background:transparent!important;border:none!important;border-radius:0!important;
-  box-shadow:none!important;padding:0!important;
-}
-.eyebrow,.eyebrow *,.section-head,.chart-heading .section-head,
-.chart-heading .section-caption{color:#FFFFFF!important;opacity:1!important}
-[data-testid="stMarkdownContainer"] .eyebrow{color:#FFFFFF!important}
-
-/* Mobile layout: Streamlit's default columns must stack rather than shrink to unreadable slivers. */
-@media screen and (max-width:1100px){
-  html,body,[data-testid="stApp"],[data-testid="stAppViewContainer"]{max-width:100%!important;overflow-x:hidden!important}
-  [data-testid="stMainBlockContainer"],.block-container{width:100%!important;max-width:100%!important;padding:1.1rem .9rem 3rem!important;box-sizing:border-box!important}
-  [data-testid="stHorizontalBlock"]{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:1rem!important;width:100%!important}
-  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"]{flex:1 1 auto!important;width:100%!important;min-width:0!important;max-width:100%!important}
-  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] > div{width:100%!important;max-width:100%!important;min-width:0!important}
-  .leader-card{height:auto!important;min-height:100px!important;max-height:none!important;padding:13px 16px!important}
-  .leader-label{font-size:.92rem!important;overflow-wrap:break-word!important}
-  .leader-name{font-size:1.05rem!important;overflow-wrap:break-word!important;max-height:none!important}
-  .leader-score{font-size:1rem!important}
-  .summary-value{font-size:1.65rem!important;white-space:normal!important;overflow-wrap:anywhere!important}
-  .table-wrap{display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
-  .rr-table{min-width:790px!important}
-  [data-testid="stPlotlyChart"]{width:100%!important;max-width:100%!important;overflow:hidden!important}
-  [data-testid="stPlotlyChart"] .js-plotly-plot,[data-testid="stPlotlyChart"] .plot-container{max-width:100%!important}
-  .pressure-card{min-height:0!important;padding:16px!important}
-}
-
-/* Mobile: keep four headline summary cards in one row; spotlight metrics in a 2-by-2 grid. */
-@media screen and (max-width:1100px){
- [data-testid="stHorizontalBlock"]:has(.summary-card){display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
- [data-testid="stHorizontalBlock"]:has(.summary-card)>[data-testid="stColumn"]{width:100%!important;min-width:0!important;max-width:none!important}
- [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-card{padding:7px 5px!important;min-height:112px!important;height:112px!important;overflow:hidden!important}
- [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-label{font-size:clamp(9px,2.4vw,12px)!important;overflow-wrap:anywhere!important}
- [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-name{font-size:clamp(10px,2.6vw,13px)!important;overflow-wrap:anywhere!important}
- [data-testid="stHorizontalBlock"]:has(.summary-card) .summary-value{font-size:clamp(12px,3.2vw,18px)!important;overflow-wrap:anywhere!important}
- [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-score{font-size:clamp(10px,2.7vw,14px)!important;white-space:normal!important}
- [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
- [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"])>[data-testid="stColumn"]{width:100%!important;min-width:0!important;max-width:none!important}
- [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]) [data-testid="stMetric"]{min-height:120px!important;padding:12px!important}
-}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
@@ -183,13 +141,14 @@ with st.sidebar:
     )
     situation_threshold=st.slider(
         'Minimum balls per pressure situation',min_value=5,max_value=50,value=20,step=5,
-        help='Pressure situations below this ball threshold receive zero pressure-situation points; original V2 scores are unaffected.'
+        help='Pressure situations below this delivery threshold receive no situation-pressure points. The original six situation-performance scores do not change.'
     )
 
 
 header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
 with header_left:
-    st.markdown("""<h1 style="font-family:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif!important;font-style:italic!important;font-weight:700!important;font-size:1.65rem!important;line-height:1.2!important;letter-spacing:.3px!important;margin:0 0 .3rem 0!important;color:#F5F7FC!important;-webkit-text-fill-color:#F5F7FC!important;text-shadow:0 1px 0 #FFFFFF,0 2px 2px rgba(136,151,176,.65),0 4px 12px rgba(205,218,239,.2)!important;">Superr Selector</h1>""",unsafe_allow_html=True)
+    st.markdown('<div class="eyebrow">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
+    st.title('SUPERR SELECTOR')
 with header_right:
     fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
 cards_slot=st.empty()
@@ -385,13 +344,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('V2 uses all eligible deliveries, with the original six situations, bands and weights. The additional 30% awards pressure points exactly as before: 60% pressure six-situation points and 40% phase-matched strike-rate improvement reliability. A delivery may earn base V2 points and one additional pressure contribution; multiple pressure flags never duplicate the delivery.')
+            st.markdown('The six original batting situations use every ball faced, with the same strike-rate bands and weights as the V2 workbook. Separately, pressure performance is assessed by situation and overall (60/40).')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling V2 uses all eligible deliveries, retaining the six situation weights. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% awards points for pressure performance: 60% pressure six-situation economy points and 40% phase-matched economy improvement reliability.')
+            st.markdown('Bowling situation points follow the final economy-percentile workbook. For bowlers defending a target, **CRR > RRR** marks pressure; the analysis compares economy rates in those deliveries and across the chase.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. V2 uses all eligible deliveries and the additional pressure score uses flagged deliveries (60% pressure situations, 40% relative improvement). Multiple pressure flags never count a delivery more than once in the pressure component.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring, not the original V2 points. Combined bowling uses the final Excel workbooks and their excluded-chase audit; IPL-only and T20I-only views recalculate from deliveries.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
@@ -406,9 +365,9 @@ with main_col:
             top['Economy']=top.economy.round(2)
             top['Pressure economy']=top.pressure_economy.round(2)
             # Exact visible column names, as requested; no truncated anonymous header row.
-            top['Base Econ']=top['matched_nonpressure_economy'].round(2)
+            top['Base Econ']=top['chase_economy'].round(2)
             top['Press. Econ']=top['Pressure economy']
-            top['Economy Improvement (%)']=top['economy_improvement_pct'].round(2)
+            top['Economy Improvement (%)']=((top['chase_economy']-top['pressure_economy']) / top['chase_economy'].where(top['chase_economy'] > 0) * 100).round(2)
             top['Press. Balls']=top['pressure_balls'].astype(int)
             top['Wickets']=top['wickets'].astype(int)
             top['Pressure Rating']=top['Final /200']
@@ -430,22 +389,22 @@ with main_col:
                        f"<span style='color:{'#53D6A0' if r['Economy Improvement (%)'] > 0 else '#E7EDF8'}'>{r['Economy Improvement (%)']:+.2f}%</span>" if pd.notna(r['Economy Improvement (%)']) else '—',
                        str(r['Dot %']),f"{int(r['Wickets']):,}",f"{r['Pressure Rating']:.2f}"]
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
-            headers=['Bowler','Pressure Balls','Pressure Economy','Matched Non-pressure Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
+            headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
-            st.caption('Economy Improvement (%) = (phase-matched non-pressure economy − pressure economy) / phase-matched non-pressure economy × 100. Positive means fewer runs conceded per over under pressure. Both positive and negative values are percentile-ranked. Pressure Dot-Ball % is display-only.')
+            st.caption('Economy Improvement (%) = (Chase Economy − Pressure Economy) / Chase Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Only positive improvement earns improvement credit in Pressure Reliability. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
             import plotly.express as px
             left_chart,right_chart=st.columns(2,gap='large')
             with left_chart:
                 chart_heading('Bowling score comparison','Final pressure rating /200 · Top 10')
                 fig=px.bar(top.sort_values('Final /200'),x='Final /200',y='Bowler',orientation='h',color='Pressure /100',color_continuous_scale=['#4667A4','#FF5FA9'])
-                fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',font_color='#F6F8FF',height=405,margin=dict(l=10,r=15,t=35,b=30))
+                fig.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=405,margin=dict(l=10,r=15,t=35,b=30))
                 st.plotly_chart(fig,use_container_width=True)
             with right_chart:
                 chart_heading('Bowling performance bubble graph','Bubble size = pressure balls · lower economy is better')
                 bubble=px.scatter(top,x='Base Econ',y='Press. Econ',size='Press. Balls',color='Final /200',hover_name='Bowler',
                     color_continuous_scale=['#4667A4','#FF5FA9'],size_max=45)
                 bubble.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=405,
-                    margin=dict(l=10,r=15,t=35,b=30),xaxis_title='Non-pressure economy (phase matched)',yaxis_title='Pressure economy')
+                    margin=dict(l=10,r=15,t=35,b=30),xaxis_title='Chase economy',yaxis_title='Pressure economy')
                 st.plotly_chart(bubble,use_container_width=True)
             heading('Bowler spotlight')
             selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
@@ -455,4 +414,4 @@ with main_col:
             q2.metric('Pressure economy',f'{b.pressure_economy:.2f}')
             q3.metric('Pressure wickets',int(b.pressure_wickets))
             q4.metric('Pressure balls',int(b.pressure_balls))
-            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. Both combined and format-specific V2 and pressure figures are recalculated from the six CSVs. The excluded-chase audit is used only for the display-only dot-ball statistic.')
+            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. Combined-format V2 and pressure figures are imported from the final workbooks; format-specific views are recalculated from deliveries. The excluded-chase audit is bundled.')
