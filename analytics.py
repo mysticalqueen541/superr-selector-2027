@@ -128,8 +128,8 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     d['pressure_collapse']=collapse
     d['pressure_death']=death
     d['pressure_knockout']=d.is_knockout
-    # V2 uses only non-pressure deliveries; pressure points use flagged deliveries.
-    v2_phases=d[~d.pressure_flag & d.situation.isin(WEIGHTS)].groupby(
+    # V2 base points use all deliveries; additional pressure points use the pressure-flagged subset.
+    v2_phases=d[d.situation.isin(WEIGHTS)].groupby(
         ['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
     all_situation_sr=v2_phases.assign(sr=lambda x:np.where(x.b>0,100*x.r/x.b,np.nan))['sr'].unstack()
     all_situation_sr=all_situation_sr.rename(
@@ -141,13 +141,13 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     chase_entries=chase_entries.drop_duplicates(['striker_id','match_id','innings'],keep='first')
     chase_entries['entry_gap']=chase_entries['rrr_est']-chase_entries['crr_est']
     entry_gap=chase_entries.groupby('striker_id').agg(entry_gap=('entry_gap','mean'),valid_entries=('entry_gap','count'))
-    # The two scoring delivery sets are disjoint.
+    # Pressure flags are combined with OR, so a delivery is counted once in the pressure subset.
     # Group by player and situation to expose the actual pressure balls faced in each.
     pressure_situations=(d[d.pressure_flag & d.legal_bat_ball & d.situation.isin(WEIGHTS)]
         .groupby(['striker_id','situation']).agg(pressure_balls=('bat_ball','sum'),pressure_runs=('bat_runs','sum')))
     ps_balls=pressure_situations['pressure_balls'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
     ps_runs=pressure_situations['pressure_runs'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
-    # Pressure SR uses flagged deliveries; V2 uses unflagged deliveries.
+    # Pressure SR uses flagged deliveries; V2 uses all eligible deliveries.
     # No situation with zero batter-faced balls receives any points.
     pressure_situation_sr=(pressure_situations.assign(pressure_sr=lambda t:np.where(
         t.pressure_balls>0,100*t.pressure_runs/t.pressure_balls,np.nan))['pressure_sr']
@@ -184,13 +184,13 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
         (t.pressure_sr/t.matched_nonpressure_sr-1)*100,np.nan)
     t['improvement_ratio']=t.improvement_pct/100
     for col,weight in WEIGHTS.items():
-        # Non-pressure situation SR for V2.
+        # All-delivery situation SR for V2.
         # A situation with zero balls receives zero, not minimum 1 point.
         normal_col=f'{col} all-ball SR'
         if normal_col not in t: t[normal_col]=np.nan
         t[col+' points']=t[normal_col].apply(score_band)
     t['phase_score']=sum(t[col+' points']*w for col,w in WEIGHTS.items())
-    # Original six V2 weights retained, with non-pressure deliveries only.
+    # Original six V2 weights retained, using all deliveries.
     # The independent pressure component now contains two sub-scores:
     # 60% six pressure-situation weighted points, 40% overall pressure reliability.
     # Each pressure situation receives ZERO if its pressure balls are below the slider threshold.
@@ -218,8 +218,8 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     # Candidate exclusion never removes opposition deliveries from match statistics.
     pool=t.loc[t.eligible & ~t.excluded].copy()
     if not pool.empty:
-        # Pressure contributes only relative uplift versus phase/context-matched
-        # NON-pressure batting. Original six-situation V2 remains unchanged.
+        # Reliability compares pressure performance to a phase-matched non-pressure baseline.
+        # Original six-situation V2 and additional pressure situation points are retained.
         # Rank both positive and negative improvement; missing comparisons are
         # neutral rather than fabricated improvements.
         lift_pct=pool['improvement_pct'].rank(pct=True,method='average').fillna(0.5)*100
