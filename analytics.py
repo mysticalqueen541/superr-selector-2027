@@ -204,13 +204,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t['pressure_six_normalized']=100*t.pressure_six_score/180
     # Overall pressure reliability uses pressure SR and relative SR improvement,
     # ranked against the currently eligible, non-excluded candidate pool.
-    # Original V2: 180 situation points + up to 20 SR improvement bonus.
-    # A pressure delivery can contribute to its base situation SR and the
-    # overall pressure comparison, but multiple flags count it only once.
-    t['original_v2_improvement_pct']=np.where(t.normal_sr>0,
-        100*(t.pressure_sr/t.normal_sr-1),np.nan)
-    t['original_v2_improvement_ratio']=t.original_v2_improvement_pct/100
-    t['bonus']=t.original_v2_improvement_ratio.apply(bonus_band)
+    t['bonus']=t.improvement_ratio.apply(bonus_band)  # historical V2 diagnostic only; NOT ranked
     t['v2_normalized']=100*t.phase_score/180
     t['eligible']=(t.matches>=min_matches)&(t.pressure_balls>=min_pressure_balls)&(t.balls>0)
     pak_ids=set(mapping.loc[mapping['team_name'].fillna('').str.match(r'^Pakistan(?: A| Shaheens)?$',case=False), 'player_id'])
@@ -220,18 +214,30 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t['excluded_retirement']=t['name'].str.casefold().isin(exclusions())
     t['excluded']=t['excluded_retirement'] | ((t['excluded_pakistan'] | t['excluded_bangladesh']) if exclude_pak_bang else False)
     t=t.reset_index().rename(columns={'striker_id':'player_id'})
-    # Original V2 is an additive 180 + 20 scale, not a 70/30 blend.
-    # Keep the other pressure diagnostics available for the dashboard.
-    t['v2_component']=t.phase_score
-    t['pressure_component']=t.bonus
-    t['final_score_200']=t.phase_score+t.bonus
-    # Dashboard composite remains on a /100 display scale.
-    t['composite']=t.final_score_200/2
-    t['rating_pct']=t.composite
-    t['pressure_rating']=t.bonus
+    # Cohort-relative percentiles are recomputed for the selected competition and filters.
+    # Candidate exclusion never removes opposition deliveries from match statistics.
+    pool=t.loc[t.eligible & ~t.excluded].copy()
+    if not pool.empty:
+        # Reliability compares pressure performance to a phase-matched non-pressure baseline.
+        # Original six-situation V2 and additional pressure situation points are retained.
+        # Rank both positive and negative improvement; missing comparisons are
+        # neutral rather than fabricated improvements.
+        lift_pct=pool['improvement_pct'].rank(pct=True,method='average').fillna(0.5)*100
+        confidence=pool['pressure_balls']/(pool['pressure_balls']+60.0)
+        pressure_rating=50+confidence*(lift_pct-50)
+        t['overall_pressure_rating']=np.nan
+        t.loc[pool.index,'overall_pressure_rating']=pressure_rating
+    else:
+        t['overall_pressure_rating']=np.nan
+    t['pressure_rating']=0.60*t.pressure_six_normalized+0.40*t.overall_pressure_rating
     t['pressure_confidence']=t.pressure_balls/(t.pressure_balls+60.0)
+    t['v2_component']=0.70*t.v2_normalized
+    t['pressure_component']=0.30*t.pressure_rating
+    t['composite']=t.v2_component+t.pressure_component
+    t['rating_pct']=t.composite
+    t['final_score_200']=2*t.composite
     ranked=t[t.eligible & ~t.excluded].sort_values(
-        ['final_score_200','pressure_balls','normal_sr','name','player_id'],
+        ['composite','pressure_balls','normal_sr','name','player_id'],
         ascending=[False,False,False,True,True],kind='stable').copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d,None
