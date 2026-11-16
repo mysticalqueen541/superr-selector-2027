@@ -419,7 +419,7 @@ with main_col:
         st.caption('Within the pressure half only: 60% pressure-situation performance + 40% overall pressure reliability. Both parts are scored out of 100 before combining.')
         st.markdown('### Minimum sample and source coverage')
         st.markdown('At least **9 matches** and the selected pressure-ball minimum. All batting and bowling rankings use the six original source CSVs; Excel is methodology reference only.')
-        st.caption('Rain-shortened chases with valid revised targets are retained; audited CSV discrepancies and no-results are excluded from reconstructed chase-pressure scoring. The same selective rule applies to combined and format-specific bowling.')
+        st.caption('Rain-shortened chases with valid revised targets are retained; audited CSV discrepancies, no-results, and weather chases missing revised targets/overs are excluded from reconstructed chase-pressure scoring. The same selective rule applies to combined and format-specific bowling.')
     elif page=='Bowlers':
         if bowl_rank.empty:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
