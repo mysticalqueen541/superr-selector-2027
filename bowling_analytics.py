@@ -94,7 +94,24 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     chase=d[d.innings.eq(2)].groupby('bowler_id').agg(chase_balls=('legal','sum'),chase_runs=('bowler_conceded','sum'))
     t=t.join(chase,how='left')
     t['chase_economy']=6*t.chase_runs/t.chase_balls.replace(0,np.nan)
-    t['economy_improvement_pct']=100*(t.chase_economy-t.pressure_economy)/t.chase_economy.replace(0,np.nan)
+    # Compare defending pressure against NON-pressure defending deliveries in
+    # the SAME phase, weighted by the bowler's pressure-ball distribution.
+    # This removes pressure balls from their own improvement baseline.
+    defending=d[d.innings.eq(2)].copy()
+    nonpressure=defending[~defending.pressure]
+    phase_base=nonpressure.groupby(['bowler_id','phase']).agg(
+        balls=('legal','sum'),conceded=('bowler_conceded','sum'))
+    phase_press=defending[defending.pressure].groupby(['bowler_id','phase']).agg(
+        balls=('legal','sum'))
+    matched=phase_press.join(phase_base,how='left',rsuffix='_base')
+    matched['base_economy']=6*matched.conceded/matched.balls_base.replace(0,np.nan)
+    matched['weighted_economy']=matched.base_economy*matched.balls
+    valid=matched[matched.balls_base.gt(0)].groupby(level=0).agg(
+        weighted=('weighted_economy','sum'),pressure_weight=('balls','sum'),
+        reference_balls=('balls_base','sum'))
+    t['matched_nonpressure_economy']=valid.weighted/valid.pressure_weight.replace(0,np.nan)
+    t['matched_baseline_balls']=valid.reference_balls
+    t['economy_improvement_pct']=100*(t.matched_nonpressure_economy-t.pressure_economy)/t.matched_nonpressure_economy.replace(0,np.nan)
     t['overall_pressure_rating']=np.nan
     if len(pool):
         # Low economy and high improvement both better; 50/50, confidence shrinkage.
@@ -103,7 +120,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
         # negative values. Lower pressure economy relative to the chase baseline
         # means a higher improvement percentile. No player is disqualified.
         improvements=t.loc[pool,'economy_improvement_pct']
-        lift=improvements.rank(ascending=True,pct=True,method='average').fillna(0)*100
+        lift=improvements.rank(ascending=True,pct=True,method='average').fillna(0.5)*100
         raw=(eco+lift)/2
         confidence=t.loc[pool,'pressure_balls']/(t.loc[pool,'pressure_balls']+60)
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
