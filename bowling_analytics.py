@@ -69,8 +69,9 @@ def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure
     t['eligible']=(t.matches>=min_matches)&(t.pressure_balls>=min_pressure_balls)&(t.balls>0)
     pak=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Pakistan(?: A| Shaheens)?$',case=False),'player_id'])
     bang=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Bangladesh(?: A| Emerging)?$',case=False),'player_id'])
-    # Uniform ranking policy: do not exclude by nationality or retirement status.
-    t['excluded']=False
+    # Calculate all players normally; final ranking excludes only those retired
+    # from BOTH T20I and IPL playing, per the shared exclusions audit.
+    t['excluded']=t.name.str.strip().str.casefold().isin(exclusions())
     pool=t.index[t.eligible&~t.excluded]
     # Six original economy percentile situations; separate for bowling first and defending.
     for sit,weight in SITUATIONS.items():
