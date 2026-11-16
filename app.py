@@ -153,6 +153,20 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
   [data-testid="stPlotlyChart"] .js-plotly-plot,[data-testid="stPlotlyChart"] .plot-container{max-width:100%!important}
   .pressure-card{min-height:0!important;padding:16px!important}
 }
+
+/* Mobile: keep four headline summary cards in one row; spotlight metrics in a 2-by-2 grid. */
+@media screen and (max-width:1100px){
+ [data-testid="stHorizontalBlock"]:has(.summary-card){display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
+ [data-testid="stHorizontalBlock"]:has(.summary-card)>[data-testid="stColumn"]{width:100%!important;min-width:0!important;max-width:none!important}
+ [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-card{padding:7px 5px!important;min-height:112px!important;height:112px!important;overflow:hidden!important}
+ [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-label{font-size:clamp(9px,2.4vw,12px)!important;overflow-wrap:anywhere!important}
+ [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-name{font-size:clamp(10px,2.6vw,13px)!important;overflow-wrap:anywhere!important}
+ [data-testid="stHorizontalBlock"]:has(.summary-card) .summary-value{font-size:clamp(12px,3.2vw,18px)!important;overflow-wrap:anywhere!important}
+ [data-testid="stHorizontalBlock"]:has(.summary-card) .leader-score{font-size:clamp(10px,2.7vw,14px)!important;white-space:normal!important}
+ [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+ [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"])>[data-testid="stColumn"]{width:100%!important;min-width:0!important;max-width:none!important}
+ [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]) [data-testid="stMetric"]{min-height:120px!important;padding:12px!important}
+}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
