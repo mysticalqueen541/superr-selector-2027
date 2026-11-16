@@ -191,14 +191,16 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
 with st.sidebar:
-    st.caption('CSV ranking engine · uniform eligibility for all players')
+    st.caption('CSV ranking engine · retirement and nationality filters for final rankings')
     if st.button('Refresh CSV calculations', help='Clear cached source data and recalculate both rankings from the six CSV files.'):
         st.cache_data.clear()
         st.rerun()
     st.markdown('### Analysis controls')
 
-    # Apply the same objective eligibility and scoring rules to every player.
-    exclude_pak_bang=False
+    exclude_pak_bang=st.checkbox('Exclude Pakistan & Bangladesh players',value=True,
+        help='Exclude Pakistan and Bangladesh players from final rankings regardless of score. Their match performances remain in the calculations.')
+    exclude_retired=st.checkbox('Exclude retired T20I + IPL players',value=True,
+        help='Exclude from final rankings only players recorded as retired from BOTH T20 internationals and IPL. Players retired from T20Is but still playing IPL remain eligible.')
     threshold=st.slider(
         'Minimum total pressure balls',min_value=50,max_value=300,value=100,step=10,
         help='A player must face at least this many pressure deliveries to qualify. This is a minimum, not a maximum.'
@@ -217,9 +219,9 @@ with header_right:
 cards_slot=st.empty()
 main_col=st.container()
 try:
-    ranked,all_players,raw,hs=calculate(fmt,threshold,exclude_pak_bang=exclude_pak_bang,min_situation_pressure_balls=situation_threshold)
+    ranked,all_players,raw,hs=calculate(fmt,threshold,exclude_pak_bang=exclude_pak_bang,min_situation_pressure_balls=situation_threshold,exclude_retired=exclude_retired)
     from bowling_analytics import calculate_bowling_final, SITUATIONS
-    bowl_rank,bowl_all,bowl_raw=calculate_bowling_final(fmt,threshold,situation_threshold,exclude_pak_bang=exclude_pak_bang)
+    bowl_rank,bowl_all,bowl_raw=calculate_bowling_final(fmt,threshold,situation_threshold,exclude_pak_bang=exclude_pak_bang,exclude_retired=exclude_retired)
     from analytics import unreliable_chase_ids
     audited_exclusions=len(unreliable_chase_ids())
 except Exception as exc:
