@@ -165,6 +165,18 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
  [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"])>[data-testid="stColumn"]{width:100%!important;min-width:0!important;max-width:none!important}
  [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]) [data-testid="stMetric"]{min-height:120px!important;padding:12px!important}
 }
+/* Keep header and format dropdown readable and inside their columns on mobile. */
+[data-testid="stSelectbox"]{max-width:100%!important;min-width:0!important}
+[data-testid="stSelectbox"] [data-baseweb="select"],
+[data-testid="stSelectbox"] [data-baseweb="select"]>div{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+[data-testid="stSelectbox"] [data-baseweb="select"] [data-testid="stMarkdownContainer"]{min-width:0!important}
+[data-testid="stSelectbox"] [data-baseweb="select"] [class*="ValueContainer"]{min-width:0!important;overflow:hidden!important}
+[data-testid="stSelectbox"] [data-baseweb="select"] [class*="SingleValue"]{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+@media(max-width:760px){
+ [data-testid="stHorizontalBlock"]:has(#competition_top){gap:10px!important}
+ [data-testid="stSelectbox"] [data-baseweb="select"]{font-size:13px!important}
+ [data-testid="stSelectbox"] [data-baseweb="select"]>div{padding-left:7px!important;padding-right:4px!important}
+}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
@@ -185,12 +197,11 @@ with st.sidebar:
     )
 
 
-header_left,header_right=st.columns([4.5,1.5],gap='large',vertical_alignment='bottom')
+header_left,header_right=st.columns([3,2],gap='medium',vertical_alignment='bottom')
 with header_left:
-    st.markdown('<div class="eyebrow">Rajasthan Royals · Talent Intelligence</div>',unsafe_allow_html=True)
     st.title('SUPERR SELECTOR')
 with header_right:
-    fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top')
+    fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top',width='stretch')
 cards_slot=st.empty()
 main_col=st.container()
 try:
