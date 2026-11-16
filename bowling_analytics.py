@@ -112,15 +112,16 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
     t['pressure_rating']=.60*t.pressure_six_normalized+.40*t.overall_pressure_rating
     t['final_score_200']=2*(.70*t.v2_normalized+.30*t.pressure_rating)
-    ranked=t.loc[pool].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
+    ranked=t.loc[pool].sort_values(['economy_improvement_pct','pressure_six_points','pressure_balls','final_score_200','name'],ascending=[False,False,False,False,True],na_position='last').copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d
 
 # Final Excel-grounded bowling: supplied workbook numbers are authoritative for
 # combined IPL+T20I. Format-specific subsets still use delivery recalculation.
 def calculate_bowling_final(choice='IPL + T20Is',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
-    if choice != 'IPL + T20Is':
-        return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang)
+    return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang)
+    # Historical aggregate-workbook path below is deliberately unreachable: all formats
+    # now rank from the six original CSVs and per-delivery pressure situations.
     e=pd.read_csv(DATA/'bowling_economy_final.csv',encoding='utf-8-sig',low_memory=False)
     p=pd.read_csv(DATA/'bowling_pressure_final.csv',encoding='utf-8-sig',low_memory=False)
     e=e[pd.to_numeric(e.c0,errors='coerce').notna()].copy()
