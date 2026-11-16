@@ -70,9 +70,9 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     bang=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Bangladesh(?: A| Emerging)?$',case=False),'player_id'])
     t['excluded']=t.name.str.casefold().isin(exclusions()) | (t.index.isin(pak|bang) if exclude_pak_bang else False)
     pool=t.index[t.eligible&~t.excluded]
-    # V2 uses non-pressure deliveries only; pressure points use flagged deliveries only.
+    # V2 base points use all deliveries; additional pressure points use pressure-flagged deliveries once.
     for sit,weight in SITUATIONS.items():
-        chunk=d[~d.pressure & d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
+        chunk=d[d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
         a=chunk.reindex(t.index).fillna(0)
         t[f'{sit} balls']=a.balls
         t[f'{sit} economy']=np.where(a.balls>0,6*a.conceded/a.balls,np.nan)
