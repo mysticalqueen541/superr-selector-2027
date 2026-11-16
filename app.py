@@ -385,13 +385,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('The six batting situations retain their V2 bands and weights, but use non-pressure balls only. Pressure scoring uses separate flagged deliveries (60% pressure situations, 40% pressure reliability). No delivery is included in both V2 and pressure scoring.')
+            st.markdown('The original six batting V2 situations use all deliveries. Pressure scoring evaluates the pressure-flagged subset (60% pressure situations, 40% pressure reliability). Some deliveries contribute to both components, as in the earlier Tim David ranking version.')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling V2 situation points use non-pressure deliveries only. For bowlers defending a target, **CRR > RRR** marks pressure; pressure scoring uses those separate deliveries and phase-matched non-pressure economy as the improvement baseline.')
+            st.markdown('Bowling V2 situation points use all deliveries. For bowlers defending a target, **CRR > RRR** marks pressure; pressure scoring uses the flagged subset and phase-matched non-pressure economy as the improvement baseline.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both batting and bowling rankings recalculate from the six CSVs, with V2 and pressure deliveries disjoint.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both batting and bowling rankings recalculate from the six CSVs. Original V2 uses all deliveries; pressure uses the flagged subset.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
