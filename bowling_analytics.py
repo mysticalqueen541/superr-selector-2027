@@ -32,9 +32,10 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     # Any 'other' extra is not assumed to be bowler charged without an explicit classification.
     d['bowler_conceded']=pd.to_numeric(d.runs,errors='coerce').fillna(0).clip(lower=0)+np.where(ex.isin(['wide','overstep']),d.ex1+d.ex2,0)
     dismiss=d.dismissal_type.fillna('').astype(str).str.lower().str.replace(' ','',regex=False).str.replace('_','',regex=False)
-    not_bowler=['runout','retiredhurt','retiredout','obstructingthefield','hitwicket?','timedout']
-    # Hit wicket is bowler credited; exclude only non-bowler dismissals.
-    not_bowler.remove('hitwicket?')
+    # Dataset includes 'Retire Out' and misspelled 'Obstracting the field'.
+    # Neither is credited to the bowler; hit wicket remains bowler-credited.
+    not_bowler=['runout','retiredhurt','retiredout','retireout',
+                'obstructingthefield','obstractingthefield','timedout']
     d['bowler_wicket']=d.is_wicket.astype(str).str.lower().eq('true') & ~dismiss.isin(not_bowler)
     grp=d.groupby(['match_id','innings'],sort=False)
     d['runs_before']=grp.team_runs.cumsum()-d.team_runs
