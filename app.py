@@ -215,7 +215,7 @@ header_left,header_right=st.columns([3,2],gap='medium',vertical_alignment='botto
 with header_left:
     st.title('SUPERR SELECTOR')
 with header_right:
-    fmt=st.selectbox('Format',['IPL + T20Is','IPL','T20Is'],key='competition_top',width='stretch')
+    fmt=st.selectbox('Format',['All','T20Is','IPL'],key='competition_top',width='stretch')
 cards_slot=st.empty()
 main_col=st.container()
 try:
