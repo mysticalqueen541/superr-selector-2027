@@ -192,9 +192,6 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
 with st.sidebar:
     st.caption('CSV ranking engine · retirement and nationality filters for final rankings')
-    if st.button('Refresh CSV calculations', help='Clear cached source data and recalculate both rankings from the six CSV files.'):
-        st.cache_data.clear()
-        st.rerun()
     st.markdown('### Analysis controls')
 
     exclude_pak_bang=st.checkbox('Exclude Pakistan & Bangladesh players',value=True,
@@ -215,7 +212,7 @@ header_left,header_right=st.columns([3,2],gap='medium',vertical_alignment='botto
 with header_left:
     st.title('SUPERR SELECTOR')
 with header_right:
-    fmt=st.selectbox('Format',['All','T20Is','IPL'],key='competition_top',width='stretch')
+    fmt=st.selectbox('Format',['All','T20s','IPL'],key='competition_top',width='stretch')
 cards_slot=st.empty()
 main_col=st.container()
 try:
@@ -247,7 +244,8 @@ for label, table in [('Batting',ranked),('Bowling',bowl_rank)]:
 
 # The batting calculation writes pressure_flag; never read the bowling pressure column here.
 all_delivery_count=len(raw)
-pressure_count=int(raw['pressure_flag'].fillna(False).astype(bool).sum()) if 'pressure_flag' in raw.columns else 0
+pressure_count=int((raw['pressure_flag'].fillna(False).astype(bool) & raw['legal_bat_ball'].fillna(False).astype(bool)).sum()) if {'pressure_flag','legal_bat_ball'}.issubset(raw.columns) else 0
+bowling_pressure_balls=int(bowl_raw.loc[bowl_raw['pressure'].fillna(False).astype(bool),'legal'].sum()) if {'pressure','legal'}.issubset(bowl_raw.columns) else 0
 with cards_slot.container():
     def count_card_html(label, value):
         return (f'<div class="leader-card summary-card"><div class="leader-label">{html.escape(label)}</div>'
@@ -266,11 +264,12 @@ with cards_slot.container():
                 f'<div class="leader-meter-fill" style="width:{fill:.2f}%"></div></div></div>')
     headline_html=('<div class="headline-grid">'
         +count_card_html('Deliveries Analyzed',all_delivery_count)
-        +count_card_html('Pressure Deliveries',pressure_count)
+        +count_card_html('Batting Pressure Balls',pressure_count)
         +leader_card_html('Top Batter',ranked)
         +leader_card_html('Top Bowler',bowl_rank)
         +'</div>')
     st.markdown(headline_html,unsafe_allow_html=True)
+    st.caption(f'Bowling pressure balls: {bowling_pressure_balls:,} · All counts use the selected format and the original CSV deliveries.')
 
 with main_col:
     page=st.radio('Dashboard page',['Batters','Bowlers','Methodology'],horizontal=True,label_visibility='collapsed',key='page_navigation')
