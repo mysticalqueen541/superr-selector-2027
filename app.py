@@ -183,7 +183,7 @@ with st.sidebar:
     )
     situation_threshold=st.slider(
         'Minimum balls per pressure situation',min_value=5,max_value=50,value=20,step=5,
-        help='Pressure situations below this ball threshold receive zero pressure-situation points; original V2 scores are unaffected.'
+        help='Controls the bowling pressure-situation minimum only. Original batting V2 uses a 180+20 points method.'
     )
 
 
@@ -385,13 +385,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('V2 uses all eligible deliveries, with the original six situations, bands and weights. The additional 30% awards pressure points exactly as before: 60% pressure six-situation points and 40% phase-matched strike-rate improvement reliability. A delivery may earn base V2 points and one additional pressure contribution; multiple pressure flags never duplicate the delivery.')
+            st.markdown('Original batting V2: six situation strike-rate bands and weights give up to 180 points, plus up to 20 points from (pressure SR − overall SR) / overall SR. Pressure flags are combined before counting balls, so a ball meeting several flags is counted only once in the pressure calculation.')
         with bowl_col:
             st.markdown('**Bowlers**')
             st.markdown('Bowling V2 uses all eligible deliveries, retaining the six situation weights. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% awards points for pressure performance: 60% pressure six-situation economy points and 40% phase-matched economy improvement reliability.')
-        st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
+        st.markdown('**Batting:** Final /200 = six-situation V2 points /180 + SR improvement bonus /20. **Bowling:** currently retains its separate 70% V2 / 30% pressure model pending verification against the original bowling V2 source.')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. V2 uses all eligible deliveries and the additional pressure score uses flagged deliveries (60% pressure situations, 40% relative improvement). Multiple pressure flags never count a delivery more than once in the pressure component.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The pressure-situation slider applies to bowling's pressure scoring; batting uses the original V2 180+20 calculation. Both rankings recalculate from the six CSVs. A pressure delivery is counted once within pressure statistics, even if several pressure flags apply.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
