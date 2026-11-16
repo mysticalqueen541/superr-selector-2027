@@ -418,8 +418,8 @@ with main_col:
         st.latex(r'\mathrm{Final}_{/200}=\mathrm{Situation}_{/100}+\mathrm{Pressure}_{/100}')
         st.caption('Within the pressure half only: 60% pressure-situation performance + 40% overall pressure reliability. Both parts are scored out of 100 before combining.')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. Source CSVs support batting and format-specific bowling; combined bowling uses Excel-derived tables.')
-        st.caption('Rain-shortened chases with valid revised targets are retained; audited CSV discrepancies and no-results are excluded from reconstructed chase-pressure scoring. Combined bowling retains the supplied Excel-derived rankings.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. All batting and bowling rankings use the six original source CSVs; Excel is methodology reference only.')
+        st.caption('Rain-shortened chases with valid revised targets are retained; audited CSV discrepancies and no-results are excluded from reconstructed chase-pressure scoring. The same selective rule applies to combined and format-specific bowling.')
     elif page=='Bowlers':
         if bowl_rank.empty:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
@@ -440,10 +440,9 @@ with main_col:
             top['Wickets']=top['wickets'].astype(int)
             top['Composite Score']=top['Final /200']
             # Dot-ball rate is a DISPLAY-ONLY diagnostic, never an input to final_score_200.
-            # For combined Excel rankings, the Excel has no per-delivery dot flags.
-            # Compute these separately from the original deliveries using the same
-            # defending-pressure direction (2nd innings, CRR > RRR), excluding audited
-            # chases; do not pretend they are a workbook-derived measure.
+            # All bowling rankings and diagnostics now use original delivery-level CSV records.
+            # Compute this separately using the same defending-pressure flags and
+            # selective chase exclusions as the CSV-based rankings.
             from bowling_analytics import calculate_pressure_dot_percent
             dots_by_id=calculate_pressure_dot_percent(fmt)
             top['Dot %']=top.index.map(dots_by_id)
@@ -483,4 +482,4 @@ with main_col:
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
             q4.metric('Composite Score /200',f'{b.final_score_200:.2f}')
-            st.caption('Combined IPL + T20I bowling uses the original Excel-derived six-situation points and pressure aggregates, weighted 50/50. Format-specific bowling recalculates from the six CSVs.')
+            st.caption('All bowling scores are calculated from the original CSV deliveries, using the six-situation economy methodology and 50/50 situation-pressure weighting.')
