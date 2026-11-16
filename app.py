@@ -385,13 +385,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('V2 uses non-pressure deliveries only, with the original six situations, bands and weights. The additional 30% awards pressure points exactly as before: 60% pressure six-situation points and 40% phase-matched strike-rate improvement reliability. No delivery is used in both V2 and pressure scoring.')
+            st.markdown('V2 uses all eligible deliveries, with the original six situations, bands and weights. The additional 30% awards pressure points exactly as before: 60% pressure six-situation points and 40% phase-matched strike-rate improvement reliability. A delivery may earn base V2 points and one additional pressure contribution; multiple pressure flags never duplicate the delivery.')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling V2 uses non-pressure deliveries only, retaining the six situation weights. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% awards points for pressure performance: 60% pressure six-situation economy points and 40% phase-matched economy improvement reliability.')
+            st.markdown('Bowling V2 uses all eligible deliveries, retaining the six situation weights. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% awards points for pressure performance: 60% pressure six-situation economy points and 40% phase-matched economy improvement reliability.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. V2 uses only non-pressure deliveries, and the additional pressure score uses flagged deliveries (60% pressure situations, 40% relative improvement). No delivery is scored in both.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. V2 uses all eligible deliveries and the additional pressure score uses flagged deliveries (60% pressure situations, 40% relative improvement). Multiple pressure flags never count a delivery more than once in the pressure component.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
