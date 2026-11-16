@@ -127,7 +127,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     d['pressure_collapse']=collapse
     d['pressure_death']=death
     d['pressure_knockout']=d.is_knockout
-    phases=d[d.pressure_flag & d.situation.isin(WEIGHTS)].groupby(['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
+    phases=d[d.situation.isin(WEIGHTS)].groupby(['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
     all_situation_sr=phases.assign(sr=lambda x:np.where(x.b>0,100*x.r/x.b,np.nan))['sr'].unstack()
     all_situation_sr=all_situation_sr.rename(columns={col:col+' all-ball SR' for col in all_situation_sr.columns})
     # Average Entry Pressure Gap: one observation per batter/chase innings.
@@ -157,6 +157,9 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     pressure['pressure_sr']=np.where(pressure.pressure_balls>0,pressure.pressure_runs/pressure.pressure_balls*100,0)
     pressure['pressure_boundary_pct']=np.where(pressure.pressure_balls>0,pressure.pressure_boundaries/pressure.pressure_balls*100,0)
     t=overall.join(pressure,how='left').join(pressure_situation_sr,how='left').join(all_situation_sr,how='left').join(entry_gap,how='left').join(ps_balls,how='left').join(ps_runs,how='left')
+    # Keep separate named pressure rates so V2 base points cannot accidentally reuse them.
+    for sit in WEIGHTS:
+        t[f'{sit} pressure SR']=t[sit] if sit in t.columns else np.nan
     t[list(ps_balls.columns)+list(ps_runs.columns)]=t[list(ps_balls.columns)+list(ps_runs.columns)].fillna(0)
     for col in [*pressure.columns]:
         t[col]=t[col].fillna(0)
