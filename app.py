@@ -355,11 +355,15 @@ def improvement_indicator(value, suffix='', decimals=2):
     arrow='↑' if value>0 else '↓' if value<0 else '→'
     return f'<span class="{css}">{arrow} {value:+.{decimals}f}{html.escape(suffix)}</span>'
 
+def rank_medal(rank):
+    """Presentation-only podium medals; ranking arithmetic is unchanged."""
+    return {1:'🥇',2:'🥈',3:'🥉'}.get(int(rank),str(int(rank)))
+
 def top_ten_table(data):
     rows=[]
     for _,r in data.head(10).iterrows():
         pct=float(np.clip(float(r['composite']),0,100))
-        rows.append(f"<tr><td>{int(r['rank'])}</td><td><b>{html.escape(str(r['name']))}</b></td>"
+        rows.append(f"<tr><td>{rank_medal(r['rank'])}</td><td><b>{html.escape(str(r['name']))}</b></td>"
                     f"<td class='number'>{int(r['pressure_balls']):,}</td>"
                     f"<td class='number'>{int(r['pressure_runs']):,}</td>"
                     f"<td class='number'>{float(r['pressure_sr']):.2f}</td>"
@@ -478,8 +482,8 @@ with main_col:
                        f"{r['Base Econ']:.2f}" if pd.notna(r['Base Econ']) else '—',
                        f"<span style='color:{'#53D6A0' if r['Economy Improvement (%)'] > 0 else '#E7EDF8'}'>{r['Economy Improvement (%)']:+.2f}%</span>" if pd.notna(r['Economy Improvement (%)']) else '—',
                        str(r['Dot %']),f"{int(r['Wickets']):,}",f"{r['Composite Score']:.2f}"]
-                bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
-            headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Composite Score /200']
+                bowler_rows.append('<tr><td>'+rank_medal(r['rank'])+'</td>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
+            headers=['Rank','Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Composite Score /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
             
             import plotly.express as px
