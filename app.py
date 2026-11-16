@@ -151,6 +151,20 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
  .section-caption{font-size:13px!important}
  .chart-heading{min-height:0!important}
 }
+/* Layout restored from the second chronological commit of 16 Nov:
+   four headline cards across even on mobile, spotlight metrics two across.
+   Auto-height preserves readable names and values instead of clipping them. */
+@media screen and (max-width:1100px){
+ .headline-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
+ .headline-grid .leader-card{height:auto!important;min-height:128px!important;max-height:none!important;overflow:visible!important;padding:8px 5px!important}
+ .headline-grid .leader-label{font-size:clamp(9px,2.3vw,12px)!important;line-height:1.25!important;overflow-wrap:anywhere!important}
+ .headline-grid .leader-name{font-size:clamp(10px,2.5vw,13px)!important;line-height:1.3!important;overflow-wrap:anywhere!important}
+ .headline-grid .summary-value{font-size:clamp(12px,3.1vw,18px)!important;overflow-wrap:anywhere!important}
+ .headline-grid .leader-score{font-size:clamp(10px,2.5vw,14px)!important;line-height:1.25!important;white-space:normal!important;overflow-wrap:anywhere!important}
+ [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"])>[data-testid="stColumn"]{width:100%!important;min-width:0!important;max-width:none!important}
+ [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stMetric"]) [data-testid="stMetric"]{min-height:120px!important;padding:12px!important}
+}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
