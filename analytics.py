@@ -128,8 +128,8 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     d['pressure_collapse']=collapse
     d['pressure_death']=death
     d['pressure_knockout']=d.is_knockout
-    # Restored original V2: all deliveries in six situations; pressure is a subset.
-    v2_phases=d[d.situation.isin(WEIGHTS)].groupby(
+    # V2 uses only non-pressure deliveries; pressure points use flagged deliveries.
+    v2_phases=d[~d.pressure_flag & d.situation.isin(WEIGHTS)].groupby(
         ['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
     all_situation_sr=v2_phases.assign(sr=lambda x:np.where(x.b>0,100*x.r/x.b,np.nan))['sr'].unstack()
     all_situation_sr=all_situation_sr.rename(
@@ -141,13 +141,13 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     chase_entries=chase_entries.drop_duplicates(['striker_id','match_id','innings'],keep='first')
     chase_entries['entry_gap']=chase_entries['rrr_est']-chase_entries['crr_est']
     entry_gap=chase_entries.groupby('striker_id').agg(entry_gap=('entry_gap','mean'),valid_entries=('entry_gap','count'))
-    # Pressure deliveries are also included in the original V2 scoring.
+    # The two scoring delivery sets are disjoint.
     # Group by player and situation to expose the actual pressure balls faced in each.
     pressure_situations=(d[d.pressure_flag & d.legal_bat_ball & d.situation.isin(WEIGHTS)]
         .groupby(['striker_id','situation']).agg(pressure_balls=('bat_ball','sum'),pressure_runs=('bat_runs','sum')))
     ps_balls=pressure_situations['pressure_balls'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
     ps_runs=pressure_situations['pressure_runs'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
-    # Pressure SR uses flagged deliveries; V2 uses all deliveries.
+    # Pressure SR uses flagged deliveries; V2 uses unflagged deliveries.
     # No situation with zero batter-faced balls receives any points.
     pressure_situation_sr=(pressure_situations.assign(pressure_sr=lambda t:np.where(
         t.pressure_balls>0,100*t.pressure_runs/t.pressure_balls,np.nan))['pressure_sr']
@@ -184,13 +184,13 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
         (t.pressure_sr/t.matched_nonpressure_sr-1)*100,np.nan)
     t['improvement_ratio']=t.improvement_pct/100
     for col,weight in WEIGHTS.items():
-        # Original all-delivery situation SR.
+        # Non-pressure situation SR for V2.
         # A situation with zero balls receives zero, not minimum 1 point.
         normal_col=f'{col} all-ball SR'
         if normal_col not in t: t[normal_col]=np.nan
         t[col+' points']=t[normal_col].apply(score_band)
     t['phase_score']=sum(t[col+' points']*w for col,w in WEIGHTS.items())
-    # Original six V2 situation weights and all-delivery scoring restored.
+    # Original six V2 weights retained, with non-pressure deliveries only.
     # The independent pressure component now contains two sub-scores:
     # 60% six pressure-situation weighted points, 40% overall pressure reliability.
     # Each pressure situation receives ZERO if its pressure balls are below the slider threshold.
