@@ -73,6 +73,8 @@ def exclusions():
 def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
+    # Match standard T20 innings only, consistent with bowling; exclude super overs.
+    d=d[d.innings.isin([1,2])].copy()
     # Eligible names are keyed by ID, not names (names can be ambiguous).
     if d.empty:return pd.DataFrame(),pd.DataFrame(),d,None
     names=d.groupby('striker_id')['striker_name'].agg(lambda s:s.mode().iat[0] if not s.mode().empty else s.iloc[0])
