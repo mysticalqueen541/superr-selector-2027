@@ -86,10 +86,9 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
                          ['PP','Middle','Death'],default='Other')
     d['context']=np.where(d.innings.isin([1,3]),'Setting','Chasing')
     d['situation']=d.phase+' · '+d.context
-    phases=d[d.situation.isin(WEIGHTS)].groupby(['striker_id','situation']).agg(
-        r=('bat_runs','sum'),b=('bat_ball','sum'))
-    all_situation_sr=phases.assign(sr=lambda t:np.where(t.b>0,t.r/t.b*100,np.nan))['sr'].unstack()
-    all_situation_sr=all_situation_sr.rename(columns={col:col+' all-ball SR' for col in all_situation_sr.columns})
+    # Situation rates are populated after pre-delivery pressure flags are reconstructed.
+    phases=None
+    all_situation_sr=None
     # Reconstruct PRE-DELIVERY match state from the UPDATED uploaded ball-by-ball CSV.
     # In this new CSV extras1_runs and extras_2_runs are numeric run amounts,
     # unlike the old file where extras1_runs held a categorical code.
@@ -128,6 +127,9 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     d['pressure_collapse']=collapse
     d['pressure_death']=death
     d['pressure_knockout']=d.is_knockout
+    phases=d[d.pressure_flag & d.situation.isin(WEIGHTS)].groupby(['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
+    all_situation_sr=phases.assign(sr=lambda x:np.where(x.b>0,100*x.r/x.b,np.nan))['sr'].unstack()
+    all_situation_sr=all_situation_sr.rename(columns={col:col+' all-ball SR' for col in all_situation_sr.columns})
     # Average Entry Pressure Gap: one observation per batter/chase innings.
     # Missing/undefined entries are excluded, never filled with zero.
     chase_entries=d[d.innings.isin([2,4]) & d.legal_bat_ball].copy()
@@ -214,7 +216,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t['rating_pct']=t.composite
     t['final_score_200']=2*t.composite
     ranked=t[t.eligible & ~t.excluded].sort_values(
-        ['improvement_pct','pressure_six_score','pressure_balls','composite','name','player_id'],
-        ascending=[False,False,False,False,True,True],kind='stable').copy()
+        ['composite','pressure_balls','normal_sr','name','player_id'],
+        ascending=[False,False,False,True,True],kind='stable').copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d,None
