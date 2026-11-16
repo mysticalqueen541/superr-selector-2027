@@ -213,6 +213,7 @@ with header_left:
     st.title('Superr Selector')
 with header_right:
     fmt=st.selectbox('Format',['All','T20s','IPL'],key='competition_top',width='stretch')
+st.caption(f'Live ranking filters · Minimum pressure balls: {threshold} · Minimum balls per pressure situation: {situation_threshold} · Rankings update automatically')
 cards_slot=st.empty()
 main_col=st.container()
 try:
