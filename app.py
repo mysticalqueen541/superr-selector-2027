@@ -191,6 +191,10 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
 with st.sidebar:
+    st.caption('CSV ranking engine · revision 2026-11-16b')
+    if st.button('Refresh CSV calculations', help='Clear cached source data and recalculate both rankings from the six CSV files.'):
+        st.cache_data.clear()
+        st.rerun()
     st.markdown('### Analysis controls')
 
     exclude_pak_bang=st.checkbox(
