@@ -1,0 +1,183 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Length 2004 >>
+stream
+BT
+/F1 10 Tf
+48 790 Td
+15 TL
+/F1 15 Tf
+(SUPERR SELECTOR 2027 - METHODOLOGY REPORT) Tj
+T*
+/F1 10 Tf
+(Purpose: Rank batters and bowlers for IPL 2027 auction scouting using) Tj
+T*
+(overall situation performance and performance under pressure.) Tj
+T*
+() Tj
+T*
+(1. DATA SCOPE) Tj
+T*
+(IPL and T20I supplied datasets from 2022 onward. Batting and format-specific) Tj
+T*
+(bowling use source CSVs. Combined IPL + T20I bowling uses Excel-derived) Tj
+T*
+(economy rankings and defending-pressure reference tables.) Tj
+T*
+() Tj
+T*
+(2. SITUATION SCORE \(50% OF FINAL\)) Tj
+T*
+(Batting: strike rate in powerplay, middle and death overs, setting or chasing.) Tj
+T*
+(All eligible batter-faced deliveries are used, not only pressure deliveries.) Tj
+T*
+(Weights: PP setting x2 / chasing x4; middle x1 / x2; death x3 / x6.) Tj
+T*
+(Weighted strike-rate band points are normalized from 180 to 100.) Tj
+T*
+(Bowling: economy percentiles in the same three phases, bowling first x2) Tj
+T*
+(and defending x4. Lower economy is better. Original Excel-derived) Tj
+T*
+(weighted points /180 are normalized to 100 for combined format.) Tj
+T*
+() Tj
+T*
+(3. PRESSURE SCORE \(50% OF FINAL\)) Tj
+T*
+(Batting: difficult chase from over 7 \(RRR >= 9 and RRR > CRR\), early) Tj
+T*
+(collapse \(3+ wickets lost in first 10 overs\), death overs \(16-20\),) Tj
+T*
+(or knockout. Overlapping conditions count once in combined pressure.) Tj
+T*
+(Bowling: defending when chasing team's pre-delivery CRR > RRR.) Tj
+T*
+(Pressure economy and improvement versus chase economy are evaluated.) Tj
+T*
+(Only positive economy improvement earns bowling improvement credit.) Tj
+T*
+() Tj
+T*
+(Pressure score /100 = 60% pressure-situation performance) Tj
+T*
+(                       + 40% overall pressure reliability.) Tj
+T*
+(Batting reliability considers pressure SR and improvement versus overall SR.) Tj
+T*
+(Bowling reliability considers pressure economy and improvement.) Tj
+T*
+(Small samples are adjusted toward 50 using confidence = balls/\(balls+60\).) Tj
+T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 2056 >>
+stream
+BT
+/F1 10 Tf
+48 790 Td
+15 TL
+/F1 15 Tf
+(SUPERR SELECTOR 2027 - METHODOLOGY \(CONTINUED\)) Tj
+T*
+/F1 10 Tf
+() Tj
+T*
+(4. FINAL COMPOSITE SCORE) Tj
+T*
+(Composite score /200 = Situation score /100 + Pressure score /100.) Tj
+T*
+(Thus situation and pressure each contribute 50% of the final ranking.) Tj
+T*
+(Players are ranked in descending composite score; pressure balls and) Tj
+T*
+(name are used as tie-breakers where specified.) Tj
+T*
+() Tj
+T*
+(5. SAMPLE REQUIREMENTS AND ASSUMPTIONS) Tj
+T*
+(Default: at least 9 matches and 100 pressure balls; minimum 20 balls) Tj
+T*
+(per pressure situation for situation-specific points. User-adjustable) Tj
+T*
+(thresholds may change the eligible player pool and ranking.) Tj
+T*
+(Missing or insufficient situation-pressure samples earn no such points.) Tj
+T*
+(Pakistan/Bangladesh exclusions are optional. Retirement and selected) Tj
+T*
+(retained-player exclusions are applied; auction availability is not) Tj
+T*
+(independently established by these flags.) Tj
+T*
+() Tj
+T*
+(Assumptions: supplied match, phase and delivery fields are consistent;) Tj
+T*
+(run rates are estimates; score bands, percentiles and weights are) Tj
+T*
+(scouting-model choices. Percentile results depend on the eligible pool.) Tj
+T*
+(Excel-derived combined bowling values use the reference workbooks;) Tj
+T*
+(the excluded-chases audit supports bowling pressure diagnostics.) Tj
+T*
+() Tj
+T*
+(6. INTERPRETATION AND LIMITATIONS) Tj
+T*
+(The full model is NOT restricted to pressure balls. The base half uses) Tj
+T*
+(all eligible deliveries; the pressure half uses defined pressure samples.) Tj
+T*
+(Final 50/50 and internal pressure 60/40 are different weighting levels.) Tj
+T*
+(Rankings indicate relative performance, not causal clutch ability or) Tj
+T*
+(guaranteed auction availability. Consider role fit, squad balance,) Tj
+T*
+(fitness, price and verified auction eligibility before final decisions.) Tj
+T*
+() Tj
+T*
+(Deliverables: Batters, Bowlers and Methodology dashboard pages;) Tj
+T*
+(top-10 shortlists; and this written methodology report.) Tj
+T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000191 00000 n 
+0000002247 00000 n 
+0000002373 00000 n 
+0000004481 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+4607
+%%EOF
