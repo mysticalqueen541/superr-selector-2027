@@ -432,7 +432,7 @@ with main_col:
             st.caption('A delivery may appear in more than one bar, so bar totals should not be added together. Each delivery counts only once in the overall pressure total.')
         st.divider()
         st.markdown('### How points are combined and players ranked')
-        st.caption('Both batting and bowling rankings use 60% original six-situation performance and 40% separate pressure performance. Batting rewards pressure strike rate and relative improvement; bowling evaluates defending-pressure economy and improvement against chase economy.')
+        st.caption('Both batting and bowling rankings use 40% original six-situation performance and 60% separate pressure performance. Batting rewards pressure strike rate and relative improvement; bowling evaluates defending-pressure economy and improvement against chase economy.')
         st.caption('Green ↑ means improvement; red ↓ means a decline. The improvement affects the pressure reliability component, while arrows are display-only.')
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
@@ -441,7 +441,7 @@ with main_col:
         with bowl_col:
             st.markdown('**Bowlers**')
             st.markdown('Six economy-based situations: bowling first ×2, defending ×4. Pressure is measured separately while defending (CRR > RRR).')
-        st.markdown('**Final score: 60% situation + 40% pressure (maximum 200 points).**')
+        st.markdown('**Final score: 40% situation + 60% pressure (maximum 200 points).**')
         st.latex(r'\mathrm{Final}_{/200}=\mathrm{Situation}_{/100}+\mathrm{Pressure}_{/100}')
         st.caption('Within the pressure component: 60% pressure-situation performance + 40% overall pressure reliability. Both parts are scored out of 100 before combining.')
         st.markdown('### Minimum sample and source coverage')
@@ -509,4 +509,4 @@ with main_col:
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
             q4.metric('Composite Score /200',f'{b.final_score_200:.2f}')
-            st.caption('All bowling scores are calculated from the original CSV deliveries, using the six-situation economy methodology and 60/40 situation-pressure weighting.')
+            st.caption('All bowling scores are calculated from the original CSV deliveries, using the six-situation economy methodology and 40/60 situation-pressure weighting.')
