@@ -224,7 +224,9 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
     t=t.reset_index().rename(columns={'striker_id':'player_id'})
     # Cohort-relative percentiles are recomputed for the selected competition and filters.
     # Candidate exclusion never removes opposition deliveries from match statistics.
-    pool=t.loc[t.eligible & ~t.excluded].copy()
+    # Score all statistically eligible players before applying shortlist-only exclusions.
+    # Checkbox toggles must never change any player's underlying performance score.
+    pool=t.loc[t.eligible].copy()
     if not pool.empty:
         # Percentile method='average' gives tied values the same result.
         # Absolute pressure SR and improvement against a player's own all-ball SR each get 50%.
