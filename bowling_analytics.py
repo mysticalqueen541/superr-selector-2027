@@ -50,13 +50,8 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     remaining=allowed-d.legal_before
     need=d.target-d.runs_before
     d['rrr']=np.where(d.innings.eq(2)&(remaining>0)&(need>0),6*need/remaining,np.nan)
-    # Pressure in either innings: batting collapse, death overs or knockout;
-    # defending also includes the original pre-delivery CRR > RRR condition.
-    wicket=d.is_wicket.astype(str).str.lower().eq('true').astype(int)
-    d['wickets_before']=grp.is_wicket.transform(lambda x:x.astype(str).str.lower().eq('true').cumsum())-wicket
-    knockout=d.knock_out.astype(str).str.lower().isin(['1','true','yes']) | d.stage.fillna('').str.contains('final|qualifier|eliminator|semi',case=False,regex=True)
-    defending_pressure=d.innings.eq(2)&d.crr.notna()&d.rrr.notna()&(d.crr>d.rrr)
-    d['pressure']=defending_pressure | (d.overid.le(10)&d.wickets_before.ge(3)) | d.overid.ge(16) | knockout
+    # Exact supplied bowling pressure workbook: defending innings only, pre-ball CRR > RRR.
+    d['pressure']=d.innings.eq(2)&d.crr.notna()&d.rrr.notna()&(d.crr>d.rrr)
     d['phase']=np.select([d.overid.between(1,6),d.overid.between(7,15),d.overid.between(16,20)],['PP','Middle','Death'],default='Other')
     d['situation']=d.phase+' · '+np.where(d.innings.eq(1),'Bowling first','Defending')
     d=d[d.situation.isin(SITUATIONS)].copy()
@@ -94,7 +89,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     t['v2_points']=sum(t[f'{sit} points']*weight for sit,weight in SITUATIONS.items())
     t['pressure_six_points']=sum(t[f'{sit} pressure points']*weight for sit,weight in SITUATIONS.items())
     t['v2_normalized']=100*t.v2_points/180
-    t['pressure_six_normalized']=100*t.pressure_six_points/180
+    t['pressure_six_normalized']=100*t.pressure_six_points/120  # Only defending phases can meet workbook pressure definition.
     # Overall economy is the comparison baseline, matching batting's overall SR baseline.
     t['chase_economy']=t['economy']  # legacy field name used by the dashboard
     t['economy_improvement_pct']=100*(t.economy-t.pressure_economy)/t.economy.replace(0,np.nan)
