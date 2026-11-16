@@ -36,10 +36,16 @@ def load():
 
 def formats(df,choice):
     ipl = df['comp_name'].fillna('').str.match(r'^IPL\s+20\d\d$',case=False)
-    intl = df['match_format'].fillna('').eq('T20I')
+    # Include the two additional non-international Asia Cup T20 tournaments.
+    # They are recorded as T20 rather than T20I in competitions.csv.
+    asia_t20 = df['comp_name'].fillna('').isin([
+        'Mens T20 Emerging Teams Asia Cup 2024',
+        'Asia Cup Rising Stars 2025',
+    ])
+    t20 = df['match_format'].fillna('').str.upper().eq('T20I') | asia_t20
     if choice=='IPL': return df[ipl].copy()
-    if choice=='T20Is': return df[intl].copy()
-    return df[ipl | intl].copy()  # All: IPL + T20Is only, matching competition scope
+    if choice in ('T20s','T20Is'): return df[t20].copy()
+    return df[ipl | t20].copy()  # All: every delivery from IPL and selected T20 tournaments
 
 def score_band(sr):
     if pd.isna(sr): return 0  # No deliveries faced in this situation: no points
