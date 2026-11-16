@@ -357,7 +357,7 @@ with main_col:
         if ranked.empty:
             st.info('No eligible batters at this setting. Reduce the minimum pressure-ball requirement or change the competition.')
         else:
-            heading('Top 10 batters under pressure','Ranked by the original weighted points /200')
+            heading('Top 10 batters under pressure','Ranked by combined situation and pressure score /200')
             top_ten_table(ranked)
             chart_left,chart_right=st.columns(2,gap='large')
             with chart_left:
@@ -405,24 +405,24 @@ with main_col:
             st.caption('Overlapping conditions count as one pressure delivery in the final total.')
         st.divider()
         st.markdown('### How points are combined and players ranked')
-        st.caption('Batting rankings combine 50% original six-situation all-delivery score and 50% pressure score. The pressure component uses pressure-only deliveries and rewards stronger pressure strike rate relative to overall strike rate. Bowling retains its separate restored methodology.')
+        st.caption('Both batting and bowling rankings use 50% original six-situation performance and 50% separate pressure performance. Batting rewards pressure strike rate and relative improvement; bowling evaluates defending-pressure economy and improvement against chase economy.')
         st.caption('Green ↑ means improvement; red ↓ means a decline. The improvement affects the pressure reliability component, while arrows are display-only.')
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('The six original batting situations use only pressure balls faced, retaining the original strike-rate bands and weights. Separately, pressure performance is assessed by situation and overall (60/40).')
+            st.markdown('The six batting base situations use all eligible batter-faced deliveries, with chasing weighted twice as heavily as setting. The separate pressure score combines pressure-situation performance (60%) and overall pressure reliability (40%).')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling uses the restored 15 November Bumrah-version scoring: the original six-situation Excel points plus a separate defending-pressure component, where pressure is pre-delivery CRR > RRR.')
-        st.latex(r'\mathrm{Final}_{/200}=2\left(0.50\times\mathrm{V2}_{/100}+0.50\times\mathrm{Pressure}_{/100}\right)')
+            st.markdown('Bowling combines 50% original six-situation economy-percentile points (bowling first ×2; defending ×4) with 50% defending-pressure performance (pre-delivery chasing CRR > RRR). Combined IPL + T20I uses the original Excel-derived reference tables.')
+        st.latex(r'\mathrm{Final}_{/200}=2\left(0.50\times\mathrm{Situation}_{/100}+0.50\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls the additional pressure-situation component; the base situation score also uses pressure deliveries. All formats recalculate from the original six CSVs.')
-        st.caption('Run-rate estimates and auction eligibility require independent checks. The 50/50 batting combination is a scouting model, not a validated prediction.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider affects pressure-situation points, not the base six-situation scores. Batting and format-specific bowling recalculate from the six source CSVs; combined IPL + T20I bowling uses Excel-derived reference tables.')
+        st.caption('Run-rate estimates and auction eligibility require independent checks. The 50/50 batting and bowling combinations are scouting models, not validated predictions.')
     elif page=='Bowlers':
         if bowl_rank.empty:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
         else:
-            heading('Top 10 bowlers under pressure','Ranked by the original weighted points /200')
+            heading('Top 10 bowlers under pressure','Ranked by combined situation and pressure score /200')
             top=bowl_rank.head(10).copy()
             top['Bowler']=top['name']
             top['Final /200']=top.final_score_200.round(2)
@@ -481,4 +481,4 @@ with main_col:
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
             q4.metric('Final /200 (reference)',f'{b.final_score_200:.2f}')
-            st.caption('Combined IPL + T20I bowling uses the restored 15 November Excel-grounded scoring. Format-specific views recalculate from the six CSVs. Rankings use the original weighted points.')
+            st.caption('Combined IPL + T20I bowling uses the original Excel-derived six-situation points and pressure aggregates, weighted 50/50. Format-specific bowling recalculates from the six CSVs.')
