@@ -214,7 +214,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t['rating_pct']=t.composite
     t['final_score_200']=2*t.composite
     ranked=t[t.eligible & ~t.excluded].sort_values(
-        ['composite','pressure_balls','normal_sr','name','player_id'],
-        ascending=[False,False,False,True,True],kind='stable').copy()
+        ['improvement_pct','pressure_six_score','pressure_balls','composite','name','player_id'],
+        ascending=[False,False,False,False,True,True],kind='stable').copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d,None
