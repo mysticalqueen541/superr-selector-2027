@@ -125,6 +125,32 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 /* Tooltip override comes last to defeat the legacy dark tooltip styling. */
 [data-baseweb="tooltip"],[role="tooltip"],[data-testid="stTooltipContent"]{background:#FFFFFF!important;color:#101010!important}
 [data-baseweb="tooltip"] *,[role="tooltip"] *,[data-testid="stTooltipContent"] *{color:#101010!important}
+/* Responsive KPI grid: four across on desktop, two across on phones. */
+.headline-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:8px 0 18px}
+.headline-grid .leader-card{width:100%;height:auto!important;min-height:132px!important;max-height:none!important;overflow:visible!important;padding:14px!important}
+.headline-grid .leader-label{font-size:clamp(12px,1vw,15px)!important;line-height:1.35!important;overflow-wrap:anywhere!important}
+.headline-grid .leader-name{font-size:clamp(14px,1.25vw,19px)!important;max-height:none!important;overflow:visible!important}
+.headline-grid .leader-score{font-size:clamp(14px,1.1vw,18px)!important;white-space:normal!important;overflow-wrap:anywhere!important}
+.headline-grid .summary-value{font-size:clamp(20px,2vw,30px)!important;white-space:normal!important;overflow-wrap:anywhere!important}
+@media(max-width:760px){
+ .block-container{padding:1rem .75rem 3rem!important}
+ .headline-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .headline-grid .leader-card{min-height:145px!important;padding:11px!important}
+ .headline-grid .leader-label{font-size:12px!important}
+ .headline-grid .leader-name{font-size:14px!important;line-height:1.3!important}
+ .headline-grid .leader-score{font-size:14px!important}
+ .headline-grid .leader-score span{font-size:11px!important}
+ .headline-grid .summary-value{font-size:23px!important}
+ [data-testid="stMetric"]{min-height:116px!important;padding:12px!important}
+ [data-testid="stMetricLabel"] p{font-size:12px!important;white-space:normal!important}
+ [data-testid="stMetricValue"]{font-size:clamp(16px,4vw,23px)!important}
+ .rr-table{min-width:780px;font-size:12px}
+ .rr-table th,.rr-table td{padding:10px 9px}
+ .table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+ .section-head{font-size:19px!important}
+ .section-caption{font-size:13px!important}
+ .chart-heading{min-height:0!important}
+}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
@@ -166,26 +192,28 @@ except Exception as exc:
 all_delivery_count=len(raw)
 pressure_count=int(raw['pressure_flag'].fillna(False).astype(bool).sum()) if 'pressure_flag' in raw.columns else 0
 with cards_slot.container():
-    card1,card2,card3,card4=st.columns(4,gap='medium')
-    def count_card(label, value):
-        st.markdown(f'<div class="leader-card summary-card"><div class="leader-label">{html.escape(label)}</div><div class="summary-value">{value:,}</div></div>',unsafe_allow_html=True)
-    with card1: count_card('Deliveries Analyzed',all_delivery_count)
-    with card2: count_card('Pressure Deliveries',pressure_count)
-    def leader_card(title, data, improvement_col):
+    def count_card_html(label, value):
+        return (f'<div class="leader-card summary-card"><div class="leader-label">{html.escape(label)}</div>'
+                f'<div class="summary-value">{value:,}</div></div>')
+    def leader_card_html(title, data):
         if data.empty:
-            st.markdown(f'<div class="leader-card"><div class="leader-label">{html.escape(title)}</div><div class="leader-name">No eligible player</div></div>', unsafe_allow_html=True)
-            return
+            return (f'<div class="leader-card"><div class="leader-label">{html.escape(title)}</div>'
+                    '<div class="leader-name">No eligible player</div></div>')
         player=html.escape(str(data.iloc[0]['name']))
         score=float(data.iloc[0]['final_score_200'])
         fill=max(0.0,min(100.0,score/2.0))
-        st.markdown(f"""<div class="leader-card">
-            <div class="leader-label">{html.escape(title)}</div>
-            <div class="leader-name">{player}</div>
-            <div class="leader-score">{score:.2f} <span>/ 200</span></div>
-            <div class="leader-meter" role="img" aria-label="Rating {score:.2f} out of 200"><div class="leader-meter-fill" style="width:{fill:.2f}%"></div></div>
-        </div>""", unsafe_allow_html=True)
-    with card3: leader_card('Top Batter',ranked,'improvement_pct')
-    with card4: leader_card('Top Bowler',bowl_rank,'economy_improvement_pct')
+        return (f'<div class="leader-card"><div class="leader-label">{html.escape(title)}</div>'
+                f'<div class="leader-name">{player}</div>'
+                f'<div class="leader-score">{score:.2f} <span>/ 200</span></div>'
+                f'<div class="leader-meter" role="img" aria-label="Rating {score:.2f} out of 200">'
+                f'<div class="leader-meter-fill" style="width:{fill:.2f}%"></div></div></div>')
+    headline_html=('<div class="headline-grid">'
+        +count_card_html('Deliveries Analyzed',all_delivery_count)
+        +count_card_html('Pressure Deliveries',pressure_count)
+        +leader_card_html('Top Batter',ranked)
+        +leader_card_html('Top Bowler',bowl_rank)
+        +'</div>')
+    st.markdown(headline_html,unsafe_allow_html=True)
 
 with main_col:
     page=st.radio('Dashboard page',['Batters','Bowlers','Methodology'],horizontal=True,label_visibility='collapsed',key='page_navigation')
