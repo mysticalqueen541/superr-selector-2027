@@ -12,7 +12,9 @@ WEIGHTS = {'PP · Setting':2, 'PP · Chasing':4, 'Middle · Setting':1,
 # Retirement exclusion requires BOTH retired_t20i AND retired_ipl.
 # This review is dated 2026-11-14; future IPL 2027 auction status is not yet confirmed.
 
-@__import__('streamlit').cache_data(show_spinner=False)
+# Shared read-only source frames: avoid deserializing the 40 MB CSV twice per rerun.
+# Both scoring functions call formats(), which makes an isolated copy before edits.
+@__import__('streamlit').cache_resource(show_spinner=False)
 def load():
     d = pd.read_csv(DATA/'ball_by_ball.csv', low_memory=False)
     m = pd.read_csv(DATA/'matches.csv')
