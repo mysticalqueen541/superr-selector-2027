@@ -177,6 +177,16 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
  [data-testid="stSelectbox"] [data-baseweb="select"]{font-size:13px!important}
  [data-testid="stSelectbox"] [data-baseweb="select"]>div{padding-left:7px!important;padding-right:4px!important}
 }
+
+/* Clean, borderless plots. Mobile plots occupy a full row instead of two cramped columns. */
+[data-testid="stPlotlyChart"]{border:none!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;padding:0!important;min-width:0!important;width:100%!important}
+.chart-heading{min-height:0!important;margin:12px 0 5px!important}
+.chart-heading .section-head{font-size:18px!important;line-height:1.3!important;margin:0!important}
+@media(max-width:760px){
+ [data-testid="stHorizontalBlock"]:has([data-testid="stPlotlyChart"]){display:flex!important;flex-direction:column!important;gap:24px!important}
+ [data-testid="stHorizontalBlock"]:has([data-testid="stPlotlyChart"]) > [data-testid="stColumn"]{width:100%!important;max-width:100%!important;min-width:0!important;flex:0 0 auto!important}
+ [data-testid="stPlotlyChart"] .js-plotly-plot,[data-testid="stPlotlyChart"] .plot-container{max-width:100%!important}
+}
 </style>''', unsafe_allow_html=True)
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
@@ -285,16 +295,17 @@ def pressure_quadrant(data):
         showlegend=False))
     fig.update_layout(height=405,template='plotly_dark',
         paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(family='DM Sans',color=WHITE,size=12),margin=dict(l=25,r=20,t=26,b=25),
+        font=dict(family='DM Sans',color=WHITE,size=12),margin=dict(l=55,r=15,t=22,b=58),
         xaxis=dict(title='Overall strike rate',range=[lo,hi],gridcolor='#283754',zeroline=False,automargin=True),
-        yaxis=dict(title='Pressure strike rate',range=[lo,hi],gridcolor='#283754',zeroline=False,automargin=True,scaleanchor='x',scaleratio=1),
+        yaxis=dict(title='Pressure strike rate',range=[lo,hi],gridcolor='#283754',zeroline=False,automargin=True),
         hoverlabel=dict(bgcolor=PANEL2,font=dict(color=WHITE)))
     st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
 
 
 
 def chart_heading(title, subtitle):
-    st.markdown('<div class="chart-heading"><div class="section-head">'+html.escape(title)+'</div><div class="section-caption">'+html.escape(subtitle)+'</div></div>', unsafe_allow_html=True)
+    # Compact chart titles only: no descriptive paragraph above plots.
+    st.markdown('<div class="chart-heading"><div class="section-head">'+html.escape(title)+'</div></div>', unsafe_allow_html=True)
 
 def compact_sr_comparison(data):
     q=data.head(10).iloc[::-1].copy()
@@ -303,11 +314,11 @@ def compact_sr_comparison(data):
     for field,label,color in [('normal_sr','Overall SR','#7898D1'),('pressure_sr','Pressure SR','#FF67AC')]:
         fig.add_trace(go.Bar(y=q['name'],x=q[field],name=label,orientation='h',marker_color=color,
             hovertemplate='%{y}<br>'+label+': %{x:.2f}<extra></extra>'))
-    fig.update_layout(height=405,barmode='group',template='plotly_dark',margin=dict(l=8,r=12,t=40,b=28),
+    fig.update_layout(height=405,barmode='group',template='plotly_dark',margin=dict(l=125,r=12,t=65,b=42),
         paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',font=dict(family='DM Sans',color=WHITE,size=11),
         xaxis=dict(title='Strike rate',gridcolor='#283754'),
         yaxis=dict(title='',automargin=True,tickfont=dict(size=11),ticklabelstandoff=7),
-        legend=dict(orientation='h',y=1.16,x=0))
+        legend=dict(orientation='h',y=1.12,x=0,font=dict(size=11)))
     st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
 
 def improvement_indicator(value, suffix='', decimals=2):
@@ -446,21 +457,21 @@ with main_col:
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
             headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
-            st.caption('Economy Improvement (%) = (Chase Economy − Pressure Economy) / Chase Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Original weighted points determine rank; improvement percentage is displayed for context. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
+            
             import plotly.express as px
             left_chart,right_chart=st.columns(2,gap='large')
             with left_chart:
                 chart_heading('Bowling score comparison','Final pressure rating /200 · Top 10')
                 fig=px.bar(top.sort_values('Final /200'),x='Final /200',y='Bowler',orientation='h',color='Pressure /100',color_continuous_scale=['#4667A4','#FF5FA9'])
-                fig.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=405,margin=dict(l=10,r=15,t=35,b=30))
-                st.plotly_chart(fig,use_container_width=True)
+                fig.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=440,margin=dict(l=130,r=18,t=25,b=48),showlegend=False,coloraxis_showscale=False,yaxis=dict(title='',automargin=True,tickfont=dict(size=11)),xaxis=dict(title='Final rating /200',automargin=True))
+                st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
             with right_chart:
                 chart_heading('Bowling performance bubble graph','Bubble size = pressure balls · lower economy is better')
                 bubble=px.scatter(top,x='Base Econ',y='Press. Econ',size='Press. Balls',color='Final /200',hover_name='Bowler',
                     color_continuous_scale=['#4667A4','#FF5FA9'],size_max=45)
                 bubble.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=405,
-                    margin=dict(l=10,r=15,t=35,b=30),xaxis_title='Chase economy',yaxis_title='Pressure economy')
-                st.plotly_chart(bubble,use_container_width=True)
+                    margin=dict(l=60,r=20,t=25,b=65),coloraxis_showscale=False,xaxis_title='Chase economy',yaxis_title='Pressure economy')
+                st.plotly_chart(bubble,use_container_width=True,config={'displayModeBar':False})
             heading('Bowler spotlight')
             selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
             b=bowl_rank.loc[selected]
