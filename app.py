@@ -34,7 +34,7 @@ p,li,label,[data-testid="stMarkdownContainer"]{color:#E2E9FB}
 [data-testid="stSelectbox"]>div>div{background:#172747!important;border:1px solid #5B648C!important;border-radius:11px!important;color:#F6F8FF!important}
 [data-testid="stSelectbox"] *{color:#F6F8FF!important}
 [data-testid="stDownloadButton"] button{background:#FF5FA9!important;color:#0B1327!important;font-weight:800!important;border:0!important;border-radius:11px!important}
-[data-testid="stPlotlyChart"]{border:1px solid rgba(255,95,169,.45);background:linear-gradient(160deg,#111D38,#0E1932);border-radius:18px;padding:12px 10px;box-shadow:0 10px 25px #00000055}
+[data-testid="stPlotlyChart"]{border:none;background:transparent;border-radius:0;padding:0;box-shadow:none}
 hr{border-color:#34415D!important}
 .brand{font:900 27px 'Outfit',sans-serif;letter-spacing:-1px;color:#fff;line-height:1.05;margin-bottom:10px}
 .brand em{color:#FF5FA9;font-style:normal}
@@ -66,7 +66,7 @@ hr{border-color:#34415D!important}
 /* Unified navy table, chart and card surfaces */
 [data-testid="stDataFrame"] [data-testid="stDataFrameResizable"]{background:#101B35!important}
 [data-testid="stDataFrame"] canvas{background:#101B35!important}
-[data-testid="stPlotlyChart"]{border:2px solid rgba(255,95,169,.72)!important;box-shadow:0 8px 0 #060B1A,0 19px 33px #00000050!important}
+[data-testid="stPlotlyChart"]{border:none!important;box-shadow:none!important}
 [data-testid="stMetric"]{border:2px solid rgba(255,95,169,.72)!important}
 .table-wrap{background:#101B35;border:2px solid #FF5FA9;border-radius:18px;overflow-x:auto;box-shadow:0 8px 0 #060B1A,0 19px 33px #00000050;margin:10px 0 20px}
 .rr-table{width:100%;border-collapse:collapse;color:#EAF0FF;font-size:13px;min-width:900px;table-layout:auto}
@@ -380,19 +380,44 @@ with main_col:
             m4.metric('Final /200',f'{r.final_score_200:.2f}')
             rating_bar(r.composite,r['rank'],len(ranked))
     elif page=='Methodology':
-        heading('How we rank players')
-        st.markdown('We compare performance across six match situations and how reliably players perform under pressure.')
-        st.markdown('### Final ranking')
-        st.markdown('**50% situation performance + 50% pressure performance** for both batters and bowlers. Final scores are shown out of 200.')
-        st.markdown('### Batting')
-        st.markdown('- **Situation score:** Strike rate in powerplay, middle and death overs, when setting or chasing. Chasing counts twice as much. All eligible deliveries are included.')
-        st.markdown('- **Pressure score:** Strike rate and improvement during difficult chases, early collapses, death overs and knockouts.')
-        st.markdown('### Bowling')
-        st.markdown('- **Situation score:** Economy-rate percentile across powerplay, middle and death overs. Bowling first has weight ×2; defending has weight ×4.')
-        st.markdown('- **Pressure score:** Economy and improvement while defending when the chasing team\'s current run rate is above its required run rate (measured before each delivery). Lower economy is better.')
-        st.markdown('### Eligibility and data')
-        st.markdown('Players need at least **9 matches** and the selected minimum pressure deliveries. Batting and format-specific bowling use the source CSVs; combined IPL + T20I bowling uses Excel-derived reference tables.')
-        st.caption('These rankings support scouting decisions; they do not predict auction outcomes.')
+        heading('How the rankings are built')
+        pressure_cards=[
+          ('01','Difficult chase','Second innings from over 7: required run rate ≥ 9 and above current run rate.'),
+          ('02','Early collapse','Three or more wickets already lost in the first 10 overs.'),
+          ('03','Death overs','Overs 16–20 in either innings.'),
+          ('04','Knockout matches','Finals, qualifiers, eliminators and semi-finals.'),
+        ]
+        left,right=st.columns([1.05,1],gap='large')
+        with left:
+            st.markdown('### When a batting delivery counts as pressure')
+            for num,title,detail in pressure_cards:
+                st.markdown(f'<div class="pressure-card"><div class="pressure-number">{num}</div><div class="pressure-title">{html.escape(title)}</div><div class="pressure-detail">{html.escape(detail)}</div></div>',unsafe_allow_html=True)
+        with right:
+            st.markdown('### Where pressure deliveries occur')
+            categories=[('Difficult chase','pressure_chase','#F45CA9'),('Early collapse','pressure_collapse','#FFB45C'),('Death overs','pressure_death','#68A7FF'),('Knockouts','pressure_knockout','#AA8BFF')]
+            if all(key in raw.columns for _,key,_ in categories):
+                labels=[name for name,_,_ in categories]+['Normal deliveries']
+                values=[int(raw[key].fillna(False).astype(bool).sum()) for _,key,_ in categories]
+                values.append(int((~raw['pressure_flag'].fillna(False).astype(bool)).sum()))
+                fig=go.Figure(go.Bar(x=values,y=labels,orientation='h',marker_color=[c for _,_,c in categories]+['#61728F'],text=[f'{n:,}' for n in values],textposition='auto'))
+                fig.update_layout(height=410,template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',font=dict(color=WHITE,size=11),margin=dict(l=5,r=10,t=20,b=30),xaxis=dict(title='Deliveries',gridcolor='#283754'),yaxis=dict(autorange='reversed',automargin=True))
+                st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
+            st.caption('Overlapping conditions count as one pressure delivery in the final total.')
+        st.divider()
+        st.markdown('### How points are combined and players ranked')
+        st.caption('Both batting and bowling rankings use 50% original six-situation performance and 50% separate pressure performance. Batting rewards pressure strike rate and relative improvement; bowling evaluates defending-pressure economy and improvement against chase economy.')
+        st.caption('Green ↑ means improvement; red ↓ means a decline. The improvement affects the pressure reliability component, while arrows are display-only.')
+        bat_col,bowl_col=st.columns(2,gap='large')
+        with bat_col:
+            st.markdown('**Batters**')
+            st.markdown('Six situations use all eligible balls. Chasing counts double. Pressure performance is scored separately.')
+        with bowl_col:
+            st.markdown('**Bowlers**')
+            st.markdown('Six economy-based situations: bowling first ×2, defending ×4. Pressure is measured separately while defending (CRR > RRR).')
+        st.latex(r'\mathrm{Final}_{/200}=2\left(0.50\times\mathrm{Situation}_{/100}+0.50\times\mathrm{Pressure}_{/100}\right)')
+        st.markdown('### Minimum sample and source coverage')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. Source CSVs support batting and format-specific bowling; combined bowling uses Excel-derived tables.')
+        st.caption('Run-rate estimates and auction eligibility require independent checks. The 50/50 batting and bowling combinations are scouting models, not validated predictions.')
     elif page=='Bowlers':
         if bowl_rank.empty:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
