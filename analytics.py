@@ -88,7 +88,7 @@ def unreliable_chase_ids():
     bad=category.str.contains('csv discrepancy|no result',regex=True) | missing_revision
     return set(ids.loc[bad].dropna().astype(int))
 
-def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
+def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20, exclude_retired=True):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
     # Eligible names are keyed by ID, not names (names can be ambiguous).
@@ -220,7 +220,7 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
     t['excluded_retained_players']=t['name'].str.strip().str.casefold().isin({'virat kohli','rohit sharma'})
     # Calculate every player's metrics normally; exclude from final auction ranking
     # only when BOTH T20I and IPL playing retirements are confirmed.
-    t['excluded']=t['excluded_retirement']
+    t['excluded']=((t['excluded_pakistan'] | t['excluded_bangladesh']) if exclude_pak_bang else False) | (t['excluded_retirement'] if exclude_retired else False)
     t=t.reset_index().rename(columns={'striker_id':'player_id'})
     # Cohort-relative percentiles are recomputed for the selected competition and filters.
     # Candidate exclusion never removes opposition deliveries from match statistics.
