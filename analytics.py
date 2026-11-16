@@ -70,6 +70,16 @@ def exclusions():
         return set(e.loc[t20 & ipl,'player_name'].astype(str).str.casefold())
     return set()
 
+
+def unreliable_chase_ids():
+    """Audited chase states that cannot safely support reconstructed pressure rates."""
+    path=DATA/'excluded_chases_audit.csv'
+    if not path.exists(): return set()
+    audit=pd.read_csv(path)
+    category=audit['Verified category'].fillna('').astype(str).str.casefold()
+    bad=category.str.contains('csv discrepancy|no result',regex=True)
+    return set(pd.to_numeric(audit.loc[bad,'Match ID'],errors='coerce').dropna().astype(int))
+
 def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
@@ -119,7 +129,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     # Pressure is defined solely from original ball-by-ball and match metadata.
     d['is_knockout']=d.knock_out.astype(str).str.lower().isin(['1','true','yes']) | d.stage.fillna('').str.contains('final|qualifier|eliminator|semi',case=False,regex=True)
     # Chase rate must exceed current rate and reach at least 9.0.
-    chase_pressure=(d.innings.eq(2)&d.overid.ge(7)&d.rrr_est.ge(9.0)&(d.rrr_est>d.crr_est))
+    chase_pressure=(~d.match_id.isin(unreliable_chase_ids()) & d.innings.eq(2)&d.overid.ge(7)&d.rrr_est.ge(9.0)&(d.rrr_est>d.crr_est))
     collapse=(d.overid.le(10)&d.wickets_before.ge(3))
     death=(d.overid.ge(16))
     d['pressure_flag']=chase_pressure | collapse | death | d.is_knockout
