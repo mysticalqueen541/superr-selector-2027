@@ -222,10 +222,24 @@ try:
     ranked,all_players,raw,hs=calculate(fmt,threshold,exclude_pak_bang=exclude_pak_bang,min_situation_pressure_balls=situation_threshold)
     from bowling_analytics import calculate_bowling_final, SITUATIONS
     bowl_rank,bowl_all,bowl_raw=calculate_bowling_final(fmt,threshold,situation_threshold,exclude_pak_bang=exclude_pak_bang)
+    from analytics import unreliable_chase_ids
+    audited_exclusions=len(unreliable_chase_ids())
 except Exception as exc:
     st.error('Could not process the competition datasets.')
     st.exception(exc)
     st.stop()
+
+# Live reproducibility check: show the actual outputs and audit rule being executed.
+st.caption(
+    f'CSV-only engine · audit exclusions: {audited_exclusions} matches · '
+    f'Batting leader: {ranked.iloc[0]["name"] if not ranked.empty else "none"} · '
+    f'Bowling leader: {bowl_rank.iloc[0]["name"] if not bowl_rank.empty else "none"}'
+)
+if fmt=='IPL + T20Is' and exclude_pak_bang and threshold==100 and situation_threshold==20:
+    if not ranked.empty and ranked.iloc[0]['name']!='Tim David':
+        st.warning('The live batting leader differs from the independently reproduced CSV ranking (Tim David). Verify the deployed branch and CSV dataset before submitting.')
+    if not bowl_rank.empty and bowl_rank.iloc[0]['name']!='Jasprit Bumrah':
+        st.warning('The live bowling leader differs from the independently reproduced CSV ranking (Jasprit Bumrah). Verify the deployed branch and CSV dataset before submitting.')
 
 # The batting calculation writes pressure_flag; never read the bowling pressure column here.
 all_delivery_count=len(raw)
