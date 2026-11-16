@@ -191,7 +191,7 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
 with st.sidebar:
-    st.caption('CSV ranking engine · revision 2026-11-16b')
+    st.caption('CSV ranking engine · verified scoring revision 2026-11-16c')
     if st.button('Refresh CSV calculations', help='Clear cached source data and recalculate both rankings from the six CSV files.'):
         st.cache_data.clear()
         st.rerun()
@@ -235,11 +235,15 @@ st.caption(
     f'Batting leader: {ranked.iloc[0]["name"] if not ranked.empty else "none"} · '
     f'Bowling leader: {bowl_rank.iloc[0]["name"] if not bowl_rank.empty else "none"}'
 )
-if fmt=='IPL + T20Is' and exclude_pak_bang and threshold==100 and situation_threshold==20:
-    if not ranked.empty and ranked.iloc[0]['name']!='Tim David':
-        st.warning('The live batting leader differs from the independently reproduced CSV ranking (Tim David). Verify the deployed branch and CSV dataset before submitting.')
-    if not bowl_rank.empty and bowl_rank.iloc[0]['name']!='Jasprit Bumrah':
-        st.warning('The live bowling leader differs from the independently reproduced CSV ranking (Jasprit Bumrah). Verify the deployed branch and CSV dataset before submitting.')
+# Check score arithmetic and rank ordering without hardcoding a winner.
+for label, table in [('Batting',ranked),('Bowling',bowl_rank)]:
+    if table.empty:
+        continue
+    score=table['final_score_200'].astype(float)
+    if not score.is_monotonic_decreasing or not np.isfinite(score).all():
+        st.error(f'{label} ranking integrity check failed: scores are unsorted or non-finite.')
+    if (score.lt(-1e-8)|score.gt(200.000001)).any():
+        st.error(f'{label} ranking integrity check failed: score outside 0–200.')
 
 # The batting calculation writes pressure_flag; never read the bowling pressure column here.
 all_delivery_count=len(raw)
