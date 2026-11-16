@@ -1,0 +1,33 @@
+name: Validate Streamlit scoring
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q app.py analytics.py bowling_analytics.py
+      - name: Run batting and bowling for all formats
+        run: |
+          python - <<'PY'
+          from analytics import calculate
+          from bowling_analytics import calculate_bowling_final
+          import numpy as np
+          for fmt in ('IPL + T20Is','IPL','T20Is'):
+              for label,fn in (('batting',calculate),('bowling',calculate_bowling_final)):
+                  ranked,all_players,deliveries,*_=fn(fmt)
+                  assert not ranked.empty,(fmt,label,'empty')
+                  assert np.isfinite(ranked.final_score_200).all(),(fmt,label,'nonfinite')
+                  assert ranked.final_score_200.between(0,200).all(),(fmt,label,'range')
+                  flag='pressure_flag' if label=='batting' else 'pressure'
+                  assert flag in deliveries.columns,(fmt,label,'pressure flag')
+                  print(fmt,label,len(ranked),ranked[['name','final_score_200']].head(3).to_string(index=False))
+          PY
