@@ -77,8 +77,16 @@ def unreliable_chase_ids():
     if not path.exists(): return set()
     audit=pd.read_csv(path)
     category=audit['Verified category'].fillna('').astype(str).str.casefold()
-    bad=category.str.contains('csv discrepancy|no result',regex=True)
-    return set(pd.to_numeric(audit.loc[bad,'Match ID'],errors='coerce').dropna().astype(int))
+    ids=pd.to_numeric(audit['Match ID'],errors='coerce')
+    # Weather/DLS chases require BOTH a verified revised target and allotted balls.
+    # Otherwise the normal 20-over target fallback creates fictitious RRR values.
+    matches=pd.read_csv(DATA/'matches.csv',usecols=['match_id','revised_target','second_inn_revised_overs'])
+    audit_meta=audit.assign(match_id=ids).merge(matches,on='match_id',how='left')
+    target=pd.to_numeric(audit_meta['revised_target'],errors='coerce')
+    overs=pd.to_numeric(audit_meta['second_inn_revised_overs'],errors='coerce')
+    missing_revision=category.str.contains('weather',regex=False) & (~target.gt(0) | ~overs.gt(0))
+    bad=category.str.contains('csv discrepancy|no result',regex=True) | missing_revision
+    return set(ids.loc[bad].dropna().astype(int))
 
 def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
     d,m,c,mapping,eleven,teams=load()
