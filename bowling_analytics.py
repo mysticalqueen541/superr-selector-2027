@@ -114,17 +114,13 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     t['economy_improvement_pct']=100*(t.matched_nonpressure_economy-t.pressure_economy)/t.matched_nonpressure_economy.replace(0,np.nan)
     t['overall_pressure_rating']=np.nan
     if len(pool):
-        # Low economy and high improvement both better; 50/50, confidence shrinkage.
-        eco=t.loc[pool,'pressure_economy'].rank(ascending=False,pct=True,method='average')*100
-        # Consistent with batting: percentile-rank ALL improvements, including
-        # negative values. Lower pressure economy relative to the chase baseline
-        # means a higher improvement percentile. No player is disqualified.
+        # Pressure adds only relative economy improvement versus same-phase
+        # NON-pressure defending deliveries. Do not reward absolute economy twice.
         improvements=t.loc[pool,'economy_improvement_pct']
         lift=improvements.rank(ascending=True,pct=True,method='average').fillna(0.5)*100
-        raw=(eco+lift)/2
         confidence=t.loc[pool,'pressure_balls']/(t.loc[pool,'pressure_balls']+60)
-        t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
-    t['pressure_rating']=.60*t.pressure_six_normalized+.40*t.overall_pressure_rating
+        t.loc[pool,'overall_pressure_rating']=50+confidence*(lift-50)
+    t['pressure_rating']=t.overall_pressure_rating
     t['final_score_200']=2*(.70*t.v2_normalized+.30*t.pressure_rating)
     ranked=t.loc[pool].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
