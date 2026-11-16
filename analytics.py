@@ -224,13 +224,14 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     # Keep the other pressure diagnostics available for the dashboard.
     t['v2_component']=t.phase_score
     t['pressure_component']=t.bonus
-    t['composite']=t.phase_score+t.bonus
-    t['rating_pct']=t.composite/2
-    t['final_score_200']=t.composite
+    t['final_score_200']=t.phase_score+t.bonus
+    # Dashboard composite remains on a /100 display scale.
+    t['composite']=t.final_score_200/2
+    t['rating_pct']=t.composite
     t['pressure_rating']=t.bonus
     t['pressure_confidence']=t.pressure_balls/(t.pressure_balls+60.0)
     ranked=t[t.eligible & ~t.excluded].sort_values(
-        ['composite','pressure_balls','normal_sr','name','player_id'],
+        ['final_score_200','pressure_balls','normal_sr','name','player_id'],
         ascending=[False,False,False,True,True],kind='stable').copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d,None
