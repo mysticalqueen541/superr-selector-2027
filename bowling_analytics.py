@@ -72,7 +72,9 @@ def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure
     # Calculate all players normally; final ranking excludes only those retired
     # from BOTH T20I and IPL playing, per the shared exclusions audit.
     t['excluded']=(t.index.isin(pak|bang) if exclude_pak_bang else False) | (t.name.str.strip().str.casefold().isin(exclusions()) if exclude_retired else False)
-    pool=t.index[t.eligible&~t.excluded]
+    # Percentiles are calculated over every statistically eligible player; exclusions
+    # affect only the final displayed ranking, not anyone's score.
+    pool=t.index[t.eligible]
     # Six original economy percentile situations; separate for bowling first and defending.
     for sit,weight in SITUATIONS.items():
         chunk=d[d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
@@ -115,7 +117,7 @@ def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
     t['pressure_rating']=.60*t.pressure_six_normalized+.40*t.overall_pressure_rating
     t['final_score_200']=2*(.50*t.v2_normalized+.50*t.pressure_rating)
-    ranked=t.loc[pool].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
+    ranked=t.loc[t.eligible & ~t.excluded].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d
 
