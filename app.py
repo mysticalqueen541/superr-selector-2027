@@ -412,7 +412,7 @@ with main_col:
         left,right=st.columns([1.05,1],gap='large')
         with left:
             st.caption('Innings 1 and 2 are standard T20 innings (setting/chasing). Innings 3 and 4 are Super Over tie-breaks: retained in full-data delivery coverage, but excluded from regular 20-over situation and pressure scores.')
-        st.markdown('### When a batting delivery counts as pressure')
+            st.markdown('### When a batting delivery counts as pressure')
             for num,title,detail in pressure_cards:
                 st.markdown(f'<div class="pressure-card"><div class="pressure-number">{num}</div><div class="pressure-title">{html.escape(title)}</div><div class="pressure-detail">{html.escape(detail)}</div></div>',unsafe_allow_html=True)
         with right:
