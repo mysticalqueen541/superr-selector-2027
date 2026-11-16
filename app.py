@@ -314,11 +314,11 @@ def compact_sr_comparison(data):
     for field,label,color in [('normal_sr','Overall SR','#7898D1'),('pressure_sr','Pressure SR','#FF67AC')]:
         fig.add_trace(go.Bar(y=q['name'],x=q[field],name=label,orientation='h',marker_color=color,
             hovertemplate='%{y}<br>'+label+': %{x:.2f}<extra></extra>'))
-    fig.update_layout(height=405,barmode='group',template='plotly_dark',margin=dict(l=125,r=12,t=65,b=42),
+    fig.update_layout(height=405,barmode='group',template='plotly_dark',margin=dict(l=125,r=12,t=88,b=42),
         paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',font=dict(family='DM Sans',color=WHITE,size=11),
         xaxis=dict(title='Strike rate',gridcolor='#283754'),
         yaxis=dict(title='',automargin=True,tickfont=dict(size=11),ticklabelstandoff=7),
-        legend=dict(orientation='h',y=1.12,x=0,font=dict(size=11)))
+        legend=dict(orientation='h',y=1.20,x=0,yanchor='bottom',font=dict(size=11)))
     st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
 
 def improvement_indicator(value, suffix='', decimals=2):
