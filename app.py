@@ -402,7 +402,7 @@ with main_col:
             st.markdown('The six original batting situations use only pressure balls faced, retaining the original strike-rate bands and weights. Separately, pressure performance is assessed by situation and overall (60/40).')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling pressure follows the supplied Excel definition only: **second innings, pre-delivery CRR > RRR**. Pressure-only situation points are therefore earned in defending phases; bowling-first pressure phases score zero. Lower pressure economy than overall economy earns improvement credit.')
+            st.markdown('Bowling uses the restored 15 November Bumrah-version scoring: the original six-situation Excel points plus a separate defending-pressure component, where pressure is pre-delivery CRR > RRR.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
         st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls the additional pressure-situation component; the base situation score also uses pressure deliveries. All formats recalculate from the original six CSVs.')
@@ -446,7 +446,7 @@ with main_col:
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
             headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
-            st.caption('Economy Improvement (%) = (Overall Economy − Pressure Economy) / Overall Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Original weighted points determine rank; improvement percentage is displayed for context. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
+            st.caption('Economy Improvement (%) = (Chase Economy − Pressure Economy) / Chase Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Original weighted points determine rank; improvement percentage is displayed for context. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
             import plotly.express as px
             left_chart,right_chart=st.columns(2,gap='large')
             with left_chart:
@@ -470,4 +470,4 @@ with main_col:
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
             q4.metric('Final /200 (reference)',f'{b.final_score_200:.2f}')
-            st.caption('Bowling pressure uses only the supplied Excel definition: second innings, pre-delivery CRR > RRR. Pressure-only bowling-first phases have zero points. All formats recalculate from the original six CSVs; rankings use the original points-based score.')
+            st.caption('Combined IPL + T20I bowling uses the restored 15 November Excel-grounded scoring. Format-specific views recalculate from the six CSVs. Rankings use the original weighted points.')
