@@ -39,7 +39,7 @@ def formats(df,choice):
     intl = df['match_format'].fillna('').eq('T20I')
     if choice=='IPL': return df[ipl].copy()
     if choice=='T20Is': return df[intl].copy()
-    return df[ipl|intl].copy()
+    return df.copy()  # All: every competition and format in the original data pack
 
 def score_band(sr):
     if pd.isna(sr): return 0  # No deliveries faced in this situation: no points
@@ -88,7 +88,7 @@ def unreliable_chase_ids():
     bad=category.str.contains('csv discrepancy|no result',regex=True) | missing_revision
     return set(ids.loc[bad].dropna().astype(int))
 
-def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
+def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
     # Eligible names are keyed by ID, not names (names can be ambiguous).
