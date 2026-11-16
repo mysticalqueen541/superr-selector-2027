@@ -183,7 +183,7 @@ with st.sidebar:
     )
     situation_threshold=st.slider(
         'Minimum balls per pressure situation',min_value=5,max_value=50,value=20,step=5,
-        help='Pressure situations below this delivery threshold receive no situation-pressure points. The original six situation-performance scores do not change.'
+        help='Pressure situations below this ball threshold receive zero pressure-situation points; original V2 scores are unaffected.'
     )
 
 
@@ -385,13 +385,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('The six batting situations retain their V2 bands and weights, but use non-pressure balls only. Pressure scoring uses separate flagged deliveries (60% pressure situations, 40% pressure reliability). No delivery is included in both V2 and pressure scoring.')
+            st.markdown('V2 uses all eligible deliveries, with the original six situations, bands and weights. The additional 30% awards pressure points exactly as before: 60% pressure six-situation points and 40% phase-matched strike-rate improvement reliability. A delivery may earn base V2 points and one additional pressure contribution; multiple pressure flags never duplicate the delivery.')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling V2 situation points use non-pressure deliveries only. For bowlers defending a target, **CRR > RRR** marks pressure; pressure scoring uses those separate deliveries and phase-matched non-pressure economy as the improvement baseline.')
+            st.markdown('Bowling V2 uses all eligible deliveries, retaining the six situation weights. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% awards points for pressure performance: 60% pressure six-situation economy points and 40% phase-matched economy improvement reliability.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both batting and bowling rankings recalculate from the six CSVs, with V2 and pressure deliveries disjoint.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. V2 uses all eligible deliveries and the additional pressure score uses flagged deliveries (60% pressure situations, 40% relative improvement). Multiple pressure flags never count a delivery more than once in the pressure component.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
@@ -430,7 +430,7 @@ with main_col:
                        f"<span style='color:{'#53D6A0' if r['Economy Improvement (%)'] > 0 else '#E7EDF8'}'>{r['Economy Improvement (%)']:+.2f}%</span>" if pd.notna(r['Economy Improvement (%)']) else '—',
                        str(r['Dot %']),f"{int(r['Wickets']):,}",f"{r['Pressure Rating']:.2f}"]
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
-            headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
+            headers=['Bowler','Pressure Balls','Pressure Economy','Matched Non-pressure Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
             st.caption('Economy Improvement (%) = (phase-matched non-pressure economy − pressure economy) / phase-matched non-pressure economy × 100. Positive means fewer runs conceded per over under pressure. Both positive and negative values are percentile-ranked. Pressure Dot-Ball % is display-only.')
             import plotly.express as px
