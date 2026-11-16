@@ -402,7 +402,7 @@ with main_col:
                 fig=go.Figure(go.Bar(x=values,y=labels,orientation='h',marker_color=[c for _,_,c in categories]+['#61728F'],text=[f'{n:,}' for n in values],textposition='auto'))
                 fig.update_layout(height=410,template='plotly_dark',paper_bgcolor='rgba(0,0,0,0)',plot_bgcolor='rgba(0,0,0,0)',font=dict(color=WHITE,size=11),margin=dict(l=5,r=10,t=20,b=30),xaxis=dict(title='Deliveries',gridcolor='#283754'),yaxis=dict(autorange='reversed',automargin=True))
                 st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
-            st.caption('Overlapping conditions count as one pressure delivery in the final total.')
+            st.caption('A delivery may appear in more than one bar, so bar totals should not be added together. Each delivery counts only once in the overall pressure total.')
         st.divider()
         st.markdown('### How points are combined and players ranked')
         st.caption('Both batting and bowling rankings use 50% original six-situation performance and 50% separate pressure performance. Batting rewards pressure strike rate and relative improvement; bowling evaluates defending-pressure economy and improvement against chase economy.')
@@ -437,7 +437,7 @@ with main_col:
             top['Economy Improvement (%)']=top['economy_improvement_pct'].round(2)
             top['Press. Balls']=top['pressure_balls'].astype(int)
             top['Wickets']=top['wickets'].astype(int)
-            top['Pressure Rating']=top['Final /200']
+            top['Composite Score']=top['Final /200']
             # Dot-ball rate is a DISPLAY-ONLY diagnostic, never an input to final_score_200.
             # For combined Excel rankings, the Excel has no per-delivery dot flags.
             # Compute these separately from the original deliveries using the same
@@ -454,17 +454,17 @@ with main_col:
                        f"{r['Press. Econ']:.2f}" if pd.notna(r['Press. Econ']) else '—',
                        f"{r['Base Econ']:.2f}" if pd.notna(r['Base Econ']) else '—',
                        f"<span style='color:{'#53D6A0' if r['Economy Improvement (%)'] > 0 else '#E7EDF8'}'>{r['Economy Improvement (%)']:+.2f}%</span>" if pd.notna(r['Economy Improvement (%)']) else '—',
-                       str(r['Dot %']),f"{int(r['Wickets']):,}",f"{r['Pressure Rating']:.2f}"]
+                       str(r['Dot %']),f"{int(r['Wickets']):,}",f"{r['Composite Score']:.2f}"]
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
-            headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
+            headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Composite Score /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
             
             import plotly.express as px
             left_chart,right_chart=st.columns(2,gap='large')
             with left_chart:
-                chart_heading('Bowling score comparison','Final pressure rating /200 · Top 10')
+                chart_heading('Bowling score comparison','Composite score /200 · Top 10')
                 fig=px.bar(top.sort_values('Final /200'),x='Final /200',y='Bowler',orientation='h',color='Pressure /100',color_continuous_scale=['#4667A4','#FF5FA9'])
-                fig.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=440,margin=dict(l=130,r=18,t=25,b=48),showlegend=False,coloraxis_showscale=False,yaxis=dict(title='',automargin=True,tickfont=dict(size=11)),xaxis=dict(title='Final rating /200',automargin=True))
+                fig.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=440,margin=dict(l=130,r=18,t=25,b=48),showlegend=False,coloraxis_showscale=False,yaxis=dict(title='',automargin=True,tickfont=dict(size=11)),xaxis=dict(title='Composite score /200',automargin=True))
                 st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
             with right_chart:
                 chart_heading('Bowling performance bubble graph','Bubble size = pressure balls · lower economy is better')
@@ -481,5 +481,5 @@ with main_col:
             q2.metric('Pressure economy',f'{b.pressure_economy:.2f}')
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
-            q4.metric('Final /200 (reference)',f'{b.final_score_200:.2f}')
+            q4.metric('Composite Score /200',f'{b.final_score_200:.2f}')
             st.caption('Combined IPL + T20I bowling uses the original Excel-derived six-situation points and pressure aggregates, weighted 50/50. Format-specific bowling recalculates from the six CSVs.')
