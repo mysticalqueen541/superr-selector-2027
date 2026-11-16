@@ -72,7 +72,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     pool=t.index[t.eligible&~t.excluded]
     # Six original economy percentile situations; separate for bowling first and defending.
     for sit,weight in SITUATIONS.items():
-        chunk=d[d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
+        chunk=d[d.pressure & d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
         a=chunk.reindex(t.index).fillna(0)
         t[f'{sit} balls']=a.balls
         t[f'{sit} economy']=np.where(a.balls>0,6*a.conceded/a.balls,np.nan)
@@ -112,7 +112,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
     t['pressure_rating']=.60*t.pressure_six_normalized+.40*t.overall_pressure_rating
     t['final_score_200']=2*(.70*t.v2_normalized+.30*t.pressure_rating)
-    ranked=t.loc[pool].sort_values(['economy_improvement_pct','pressure_six_points','pressure_balls','final_score_200','name'],ascending=[False,False,False,False,True],na_position='last').copy()
+    ranked=t.loc[pool].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d
 
