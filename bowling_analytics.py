@@ -69,7 +69,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     pak=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Pakistan(?: A| Shaheens)?$',case=False),'player_id'])
     bang=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Bangladesh(?: A| Emerging)?$',case=False),'player_id'])
     t['excluded']=t.name.str.casefold().isin(exclusions()) | (t.index.isin(pak|bang) if exclude_pak_bang else False)
-    pool=t.index[t.eligible&~t.excluded]
+    pool=t.index[t.eligible & ~t.excluded & t.economy_improvement_pct.gt(0)]
     # Six original economy percentile situations; separate for bowling first and defending.
     for sit,weight in SITUATIONS.items():
         chunk=d[d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
@@ -149,7 +149,7 @@ def calculate_bowling_final(choice='IPL + T20Is',min_pressure_balls=100,min_situ
     pak=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Pakistan(?: A| Shaheens)?$',case=False),'player_id'])
     bang=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Bangladesh(?: A| Emerging)?$',case=False),'player_id'])
     t['excluded']=t.name.str.casefold().isin(exclusions()) | (t.index.isin(pak|bang) if exclude_pak_bang else False)
-    pool=t.index[t.eligible&~t.excluded]
+    pool=t.index[t.eligible & ~t.excluded & t.economy_improvement_pct.gt(0)]
     # Original Excel V2 weighted points, not recalculated percentiles.
     for sit,idx in [('PP · Bowling first',11),('Middle · Bowling first',16),('Death · Bowling first',21),('PP · Defending',31),('Middle · Defending',36),('Death · Defending',41)]:
         t[f'{sit} balls']=pd.to_numeric(e[f'c{idx}'],errors='coerce').fillna(0)
