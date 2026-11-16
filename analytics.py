@@ -193,7 +193,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t=t.reset_index().rename(columns={'striker_id':'player_id'})
     # Cohort-relative percentiles are recomputed for the selected competition and filters.
     # Candidate exclusion never removes opposition deliveries from match statistics.
-    pool=t.loc[t.eligible & ~t.excluded & t.improvement_pct.gt(0)].copy()
+    pool=t.loc[t.eligible & ~t.excluded].copy()
     if not pool.empty:
         # Percentile method='average' gives tied values the same result.
         # Absolute pressure SR and improvement against a player's own all-ball SR each get 50%.
@@ -213,7 +213,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t['composite']=t.v2_component+t.pressure_component
     t['rating_pct']=t.composite
     t['final_score_200']=2*t.composite
-    ranked=t[t.eligible & ~t.excluded & t.improvement_pct.gt(0)].sort_values(
+    ranked=t[t.eligible & ~t.excluded].sort_values(
         ['composite','pressure_balls','normal_sr','name','player_id'],
         ascending=[False,False,False,True,True],kind='stable').copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
