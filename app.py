@@ -394,7 +394,7 @@ with main_col:
             st.caption('Overlapping conditions count as one pressure delivery in the final total.')
         st.divider()
         st.markdown('### How points are combined and players ranked')
-        st.caption('Rankings use the original weighted points score /200 (70% situation score, 30% pressure score). Both situation and pressure scoring use pressure deliveries. Higher pressure strike rate relative to overall strike rate increases the pressure reliability component; the improvement percentage itself is also displayed.')
+        st.caption('Batting rankings combine 50% original six-situation all-delivery score and 50% pressure score. The pressure component uses pressure-only deliveries and rewards stronger pressure strike rate relative to overall strike rate. Bowling retains its separate restored methodology.')
         st.caption('Green ↑ means improvement; red ↓ means a decline. The improvement affects the pressure reliability component, while arrows are display-only.')
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
@@ -403,10 +403,10 @@ with main_col:
         with bowl_col:
             st.markdown('**Bowlers**')
             st.markdown('Bowling uses the restored 15 November Bumrah-version scoring: the original six-situation Excel points plus a separate defending-pressure component, where pressure is pre-delivery CRR > RRR.')
-        st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
+        st.latex(r'\mathrm{Final}_{/200}=2\left(0.50\times\mathrm{V2}_{/100}+0.50\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
         st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls the additional pressure-situation component; the base situation score also uses pressure deliveries. All formats recalculate from the original six CSVs.')
-        st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
+        st.caption('Run-rate estimates and auction eligibility require independent checks. The 50/50 batting combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
