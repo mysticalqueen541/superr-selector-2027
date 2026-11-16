@@ -15,7 +15,7 @@ class DashboardSmokeTest(unittest.TestCase):
         intl = formats(self.source, "T20Is")
         self.assertEqual(len(all_rows), len(self.source))
         self.assertLessEqual(len(ipl) + len(intl), len(all_rows))
-        self.assertEqual(len(ipl), int(ipl.comp_name.str.match(r"^IPL\\s+20\\d\\d$", case=False).sum()))
+        self.assertEqual(len(ipl), int(ipl.comp_name.str.match(r"^IPL\s+20\d\d$", case=False).sum()))
         self.assertTrue(intl.match_format.eq("T20I").all())
 
     def test_rankings_and_pressure(self):
