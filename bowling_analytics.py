@@ -17,7 +17,7 @@ def _score_percentiles(df,balls_col='balls',runs_col='conceded',min_balls=12):
         result.loc[valid]=eco.loc[valid].rank(ascending=False,pct=True,method='average')*10
     return result
 
-def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
+def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
     if d.empty:return pd.DataFrame(),pd.DataFrame(),d
@@ -118,11 +118,11 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     return ranked,t,d
 
 # Excel was a methodology reference only. All ranking inputs come from the six raw CSVs.
-def calculate_bowling_final(choice='IPL + T20Is',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
+def calculate_bowling_final(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
     return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang)
 
 
-def calculate_pressure_dot_percent(choice='IPL + T20Is'):
+def calculate_pressure_dot_percent(choice='All'):
     """Display-only pressure dot percentage; never used in ranking arithmetic.
 
     Dot = legal delivery with zero runs charged to the bowler (byes/leg-byes
