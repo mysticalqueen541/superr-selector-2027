@@ -385,13 +385,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('The six original batting situations use every ball faced, with the same strike-rate bands and weights as the V2 workbook. Separately, pressure performance is assessed by situation and overall (60/40).')
+            st.markdown('The six batting situations retain their V2 bands and weights, but use non-pressure balls only. Pressure scoring uses separate flagged deliveries (60% pressure situations, 40% pressure reliability). No delivery is included in both V2 and pressure scoring.')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling situation points follow the final economy-percentile workbook. For bowlers defending a target, **CRR > RRR** marks pressure; the analysis compares economy rates in those deliveries and across the chase.')
+            st.markdown('Bowling V2 situation points use non-pressure deliveries only. For bowlers defending a target, **CRR > RRR** marks pressure; pressure scoring uses those separate deliveries and phase-matched non-pressure economy as the improvement baseline.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring, not the original V2 points. Combined bowling uses the final Excel workbooks and their excluded-chase audit; IPL-only and T20I-only views recalculate from deliveries.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both batting and bowling rankings recalculate from the six CSVs, with V2 and pressure deliveries disjoint.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
@@ -406,9 +406,9 @@ with main_col:
             top['Economy']=top.economy.round(2)
             top['Pressure economy']=top.pressure_economy.round(2)
             # Exact visible column names, as requested; no truncated anonymous header row.
-            top['Base Econ']=top['chase_economy'].round(2)
+            top['Base Econ']=top['matched_nonpressure_economy'].round(2)
             top['Press. Econ']=top['Pressure economy']
-            top['Economy Improvement (%)']=((top['chase_economy']-top['pressure_economy']) / top['chase_economy'].where(top['chase_economy'] > 0) * 100).round(2)
+            top['Economy Improvement (%)']=top['economy_improvement_pct'].round(2)
             top['Press. Balls']=top['pressure_balls'].astype(int)
             top['Wickets']=top['wickets'].astype(int)
             top['Pressure Rating']=top['Final /200']
@@ -432,7 +432,7 @@ with main_col:
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
             headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
-            st.caption('Economy Improvement (%) = (Chase Economy − Pressure Economy) / Chase Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Only positive improvement earns improvement credit in Pressure Reliability. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
+            st.caption('Economy Improvement (%) = (phase-matched non-pressure economy − pressure economy) / phase-matched non-pressure economy × 100. Positive means fewer runs conceded per over under pressure. Both positive and negative values are percentile-ranked. Pressure Dot-Ball % is display-only.')
             import plotly.express as px
             left_chart,right_chart=st.columns(2,gap='large')
             with left_chart:
@@ -445,7 +445,7 @@ with main_col:
                 bubble=px.scatter(top,x='Base Econ',y='Press. Econ',size='Press. Balls',color='Final /200',hover_name='Bowler',
                     color_continuous_scale=['#4667A4','#FF5FA9'],size_max=45)
                 bubble.update_layout(paper_bgcolor='#101B35',plot_bgcolor='#101B35',font_color='#F6F8FF',height=405,
-                    margin=dict(l=10,r=15,t=35,b=30),xaxis_title='Chase economy',yaxis_title='Pressure economy')
+                    margin=dict(l=10,r=15,t=35,b=30),xaxis_title='Non-pressure economy (phase matched)',yaxis_title='Pressure economy')
                 st.plotly_chart(bubble,use_container_width=True)
             heading('Bowler spotlight')
             selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
@@ -455,4 +455,4 @@ with main_col:
             q2.metric('Pressure economy',f'{b.pressure_economy:.2f}')
             q3.metric('Pressure wickets',int(b.pressure_wickets))
             q4.metric('Pressure balls',int(b.pressure_balls))
-            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. Combined-format V2 and pressure figures are imported from the final workbooks; format-specific views are recalculated from deliveries. The excluded-chase audit is bundled.')
+            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. Both combined and format-specific V2 and pressure figures are recalculated from the six CSVs. The excluded-chase audit is used only for the display-only dot-ball statistic.')
