@@ -160,7 +160,24 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t[list(ps_balls.columns)+list(ps_runs.columns)]=t[list(ps_balls.columns)+list(ps_runs.columns)].fillna(0)
     for col in [*pressure.columns]:
         t[col]=t[col].fillna(0)
-    t['improvement_pct']=np.where(t.normal_sr>0,(t.pressure_sr/t.normal_sr-1)*100,0)
+    # Phase/context-matched NON-pressure baseline, weighted by the player's
+    # actual pressure-ball distribution across the original six situations.
+    # Do not let pressure balls contribute to their own comparison baseline.
+    nonpressure=(d[~d.pressure_flag & d.legal_bat_ball & d.situation.isin(WEIGHTS)]
+        .groupby(['striker_id','situation']).agg(base_balls=('bat_ball','sum'),base_runs=('bat_runs','sum')))
+    np_balls=nonpressure['base_balls'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
+    np_runs=nonpressure['base_runs'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
+    matched_balls=ps_balls.copy()
+    matched_balls.columns=[col.removesuffix(' pressure balls') for col in matched_balls.columns]
+    # Only contexts with observed non-pressure deliveries are comparable.
+    base_sr=100*np_runs.div(np_balls.replace(0,np.nan))
+    matched_weight=matched_balls.where(np_balls.reindex(matched_balls.index).gt(0),0)
+    matched_baseline=(base_sr.reindex(matched_balls.index).mul(matched_weight).sum(axis=1)
+                      /matched_weight.sum(axis=1).replace(0,np.nan))
+    t['matched_nonpressure_sr']=matched_baseline.reindex(t.index)
+    t['matched_baseline_balls']=np_balls.reindex(t.index).where(matched_weight.gt(0),0).sum(axis=1).fillna(0)
+    t['improvement_pct']=np.where(t.matched_nonpressure_sr>0,
+        (t.pressure_sr/t.matched_nonpressure_sr-1)*100,np.nan)
     t['improvement_ratio']=t.improvement_pct/100
     for col,weight in WEIGHTS.items():
         # All-ball situation SR, identical to original V2 batting method.
@@ -200,7 +217,7 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
         # Percentile method='average' gives tied values the same result.
         # Absolute pressure SR and improvement against a player's own all-ball SR each get 50%.
         sr_pct=pool['pressure_sr'].rank(pct=True,method='average')*100
-        lift_pct=pool['improvement_pct'].rank(pct=True,method='average')*100
+        lift_pct=pool['improvement_pct'].rank(pct=True,method='average').fillna(0.5)*100
         raw_pressure=(sr_pct+lift_pct)/2
         confidence=pool['pressure_balls']/(pool['pressure_balls']+60.0)
         pressure_rating=50+confidence*(raw_pressure-50)
