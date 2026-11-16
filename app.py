@@ -383,8 +383,8 @@ with main_col:
             st.caption('Overlapping conditions count as one pressure delivery in the final total.')
         st.divider()
         st.markdown('### How points are combined and players ranked')
-        st.caption('Rankings use the original weighted points score /200 (70% situation score, 30% pressure score). Both situation and pressure scoring use pressure deliveries. Improvement percentages are display-only diagnostics.')
-        st.caption('Green ↑ means improvement; red ↓ means a decline. These indicators display existing metrics and do not add points.')
+        st.caption('Rankings use the original weighted points score /200 (70% situation score, 30% pressure score). Both situation and pressure scoring use pressure deliveries. Higher pressure strike rate relative to overall strike rate increases the pressure reliability component; the improvement percentage itself is also displayed.')
+        st.caption('Green ↑ means improvement; red ↓ means a decline. The improvement affects the pressure reliability component, while arrows are display-only.')
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
@@ -459,4 +459,4 @@ with main_col:
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
             q4.metric('Final /200 (reference)',f'{b.final_score_200:.2f}')
-            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. All formats recalculate from the original six CSVs; rankings prioritize economy improvement percentage.')
+            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. All formats recalculate from the original six CSVs; rankings use the original points-based score.')
