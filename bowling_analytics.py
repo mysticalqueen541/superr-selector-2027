@@ -17,7 +17,7 @@ def _score_percentiles(df,balls_col='balls',runs_col='conceded',min_balls=12):
         result.loc[valid]=eco.loc[valid].rank(ascending=False,pct=True,method='average')*10
     return result
 
-def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
+def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True,exclude_retired=True):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
     if d.empty:return pd.DataFrame(),pd.DataFrame(),d
@@ -71,7 +71,7 @@ def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure
     bang=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Bangladesh(?: A| Emerging)?$',case=False),'player_id'])
     # Calculate all players normally; final ranking excludes only those retired
     # from BOTH T20I and IPL playing, per the shared exclusions audit.
-    t['excluded']=t.name.str.strip().str.casefold().isin(exclusions())
+    t['excluded']=(t.index.isin(pak|bang) if exclude_pak_bang else False) | (t.name.str.strip().str.casefold().isin(exclusions()) if exclude_retired else False)
     pool=t.index[t.eligible&~t.excluded]
     # Six original economy percentile situations; separate for bowling first and defending.
     for sit,weight in SITUATIONS.items():
@@ -121,7 +121,7 @@ def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure
 
 # Excel was a methodology reference only. All ranking inputs come from the six raw CSVs.
 def calculate_bowling_final(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
-    return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang)
+    return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang,exclude_retired)
 
 
 def calculate_pressure_dot_percent(choice='All'):
