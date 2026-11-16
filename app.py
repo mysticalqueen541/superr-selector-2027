@@ -191,16 +191,14 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
 with st.sidebar:
-    st.caption('CSV ranking engine · verified scoring revision 2026-11-16c')
+    st.caption('CSV ranking engine · uniform eligibility for all players')
     if st.button('Refresh CSV calculations', help='Clear cached source data and recalculate both rankings from the six CSV files.'):
         st.cache_data.clear()
         st.rerun()
     st.markdown('### Analysis controls')
 
-    exclude_pak_bang=st.checkbox(
-        'Exclude Pakistan & Bangladesh players', value=True,
-        help='Exclude Pakistan and Bangladesh players from the shortlist. Matches played against them are still included.'
-    )
+    # Apply the same objective eligibility and scoring rules to every player.
+    exclude_pak_bang=False
     threshold=st.slider(
         'Minimum total pressure balls',min_value=50,max_value=300,value=100,step=10,
         help='A player must face at least this many pressure deliveries to qualify. This is a minimum, not a maximum.'
