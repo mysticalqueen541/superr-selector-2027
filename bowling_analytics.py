@@ -70,9 +70,10 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     bang=set(mapping.loc[mapping.team_name.fillna('').str.match(r'^Bangladesh(?: A| Emerging)?$',case=False),'player_id'])
     t['excluded']=t.name.str.casefold().isin(exclusions()) | (t.index.isin(pak|bang) if exclude_pak_bang else False)
     pool=t.index[t.eligible&~t.excluded]
-    # Six original economy percentile situations; separate for bowling first and defending.
+    # Six original situation weights; V2 uses ONLY non-pressure deliveries.
+    # Pressure six uses ONLY flagged deliveries; the two sets never overlap.
     for sit,weight in SITUATIONS.items():
-        chunk=d[d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
+        chunk=d[~d.pressure & d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
         a=chunk.reindex(t.index).fillna(0)
         t[f'{sit} balls']=a.balls
         t[f'{sit} economy']=np.where(a.balls>0,6*a.conceded/a.balls,np.nan)
