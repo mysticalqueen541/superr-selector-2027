@@ -120,7 +120,7 @@ def calculate_bowling(choice='All',min_pressure_balls=100,min_situation_pressure
     return ranked,t,d
 
 # Excel was a methodology reference only. All ranking inputs come from the six raw CSVs.
-def calculate_bowling_final(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
+def calculate_bowling_final(choice='All',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True,exclude_retired=True):
     return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang,exclude_retired)
 
 
