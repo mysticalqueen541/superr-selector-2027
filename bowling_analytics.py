@@ -42,7 +42,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     d['crr']=np.where(d.legal_before>0,6*d.runs_before/d.legal_before,np.nan)
     first=d[d.innings.eq(1)].groupby('match_id').team_runs.sum()
     d['target']=d.match_id.map(first)+1
-    mm=m[['match_id','revised_target','second_inn_revised_overs']].drop_duplicates('match_id')
+    mm=m[['match_id','revised_target','second_inn_revised_overs','knock_out','stage']].drop_duplicates('match_id')
     d=d.merge(mm,on='match_id',how='left',validate='many_to_one')
     revised=pd.to_numeric(d.revised_target,errors='coerce')
     d['target']=revised.where(revised>0,d.target)
@@ -50,8 +50,13 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     remaining=allowed-d.legal_before
     need=d.target-d.runs_before
     d['rrr']=np.where(d.innings.eq(2)&(remaining>0)&(need>0),6*need/remaining,np.nan)
-    # Exact workbook direction: defending side pressured when chasing side CRR > RRR.
-    d['pressure']=d.innings.eq(2)&d.crr.notna()&d.rrr.notna()&(d.crr>d.rrr)
+    # Pressure in either innings: batting collapse, death overs or knockout;
+    # defending also includes the original pre-delivery CRR > RRR condition.
+    wicket=d.is_wicket.astype(str).str.lower().eq('true').astype(int)
+    d['wickets_before']=grp.is_wicket.transform(lambda x:x.astype(str).str.lower().eq('true').cumsum())-wicket
+    knockout=d.knock_out.astype(str).str.lower().isin(['1','true','yes']) | d.stage.fillna('').str.contains('final|qualifier|eliminator|semi',case=False,regex=True)
+    defending_pressure=d.innings.eq(2)&d.crr.notna()&d.rrr.notna()&(d.crr>d.rrr)
+    d['pressure']=defending_pressure | (d.overid.le(10)&d.wickets_before.ge(3)) | d.overid.ge(16) | knockout
     d['phase']=np.select([d.overid.between(1,6),d.overid.between(7,15),d.overid.between(16,20)],['PP','Middle','Death'],default='Other')
     d['situation']=d.phase+' · '+np.where(d.innings.eq(1),'Bowling first','Defending')
     d=d[d.situation.isin(SITUATIONS)].copy()
@@ -72,7 +77,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     pool=t.index[t.eligible&~t.excluded]
     # Six original economy percentile situations; separate for bowling first and defending.
     for sit,weight in SITUATIONS.items():
-        chunk=d[d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
+        chunk=d[d.pressure&d.situation.eq(sit)].groupby('bowler_id').agg(balls=('legal','sum'),conceded=('bowler_conceded','sum'))
         a=chunk.reindex(t.index).fillna(0)
         t[f'{sit} balls']=a.balls
         t[f'{sit} economy']=np.where(a.balls>0,6*a.conceded/a.balls,np.nan)
@@ -89,12 +94,10 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     t['v2_points']=sum(t[f'{sit} points']*weight for sit,weight in SITUATIONS.items())
     t['pressure_six_points']=sum(t[f'{sit} pressure points']*weight for sit,weight in SITUATIONS.items())
     t['v2_normalized']=100*t.v2_points/180
-    t['pressure_six_normalized']=100*t.pressure_six_points/120  # pressure workbook covers defending innings only; maximum weighted pressure points = 3 phases × 4 × 10
-    # Compare pressure economy against a chase-only baseline, matching workbook scope.
-    chase=d[d.innings.eq(2)].groupby('bowler_id').agg(chase_balls=('legal','sum'),chase_runs=('bowler_conceded','sum'))
-    t=t.join(chase,how='left')
-    t['chase_economy']=6*t.chase_runs/t.chase_balls.replace(0,np.nan)
-    t['economy_improvement_pct']=100*(t.chase_economy-t.pressure_economy)/t.chase_economy.replace(0,np.nan)
+    t['pressure_six_normalized']=100*t.pressure_six_points/180
+    # Overall economy is the comparison baseline, matching batting's overall SR baseline.
+    t['chase_economy']=t['economy']  # legacy field name used by the dashboard
+    t['economy_improvement_pct']=100*(t.economy-t.pressure_economy)/t.economy.replace(0,np.nan)
     t['overall_pressure_rating']=np.nan
     if len(pool):
         # Low economy and high improvement both better; 50/50, confidence shrinkage.
@@ -119,6 +122,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
 # Final Excel-grounded bowling: supplied workbook numbers are authoritative for
 # combined IPL+T20I. Format-specific subsets still use delivery recalculation.
 def calculate_bowling_final(choice='IPL + T20Is',min_pressure_balls=100,min_situation_pressure_balls=20,min_matches=9,exclude_pak_bang=True):
+    return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang)
     if choice != 'IPL + T20Is':
         return calculate_bowling(choice,min_pressure_balls,min_situation_pressure_balls,min_matches,exclude_pak_bang)
     e=pd.read_csv(DATA/'bowling_economy_final.csv',encoding='utf-8-sig',low_memory=False)
