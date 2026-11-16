@@ -39,7 +39,7 @@ def formats(df,choice):
     intl = df['match_format'].fillna('').eq('T20I')
     if choice=='IPL': return df[ipl].copy()
     if choice=='T20Is': return df[intl].copy()
-    return df.copy()  # All: every competition and format in the original data pack
+    return df[ipl | intl].copy()  # All: IPL + T20Is only, matching competition scope
 
 def score_band(sr):
     if pd.isna(sr): return 0  # No deliveries faced in this situation: no points
@@ -215,9 +215,7 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
     t['excluded_pakistan']=t.index.isin(pak_ids)
     t['excluded_bangladesh']=t.index.isin(bang_ids)
     t['excluded_retirement']=t['name'].str.casefold().isin(exclusions())
-    # Retained IPL 2026 players are not treated as IPL retirees; exclude these
-    # two from this auction scouting shortlist separately from retirement status.
-    t['excluded_retained_players']=t['name'].str.strip().str.casefold().isin({'virat kohli','rohit sharma'})
+    # Diagnostic only: these players are not excluded by a hard-coded shortlist.
     # Calculate every player's metrics normally; exclude from final auction ranking
     # only when BOTH T20I and IPL playing retirements are confirmed.
     t['excluded']=((t['excluded_pakistan'] | t['excluded_bangladesh']) if exclude_pak_bang else False) | (t['excluded_retirement'] if exclude_retired else False)
@@ -241,8 +239,8 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
         t['overall_pressure_rating']=np.nan
     t['pressure_rating']=0.60*t.pressure_six_normalized+0.40*t.overall_pressure_rating
     t['pressure_confidence']=t.pressure_balls/(t.pressure_balls+60.0)
-    t['v2_component']=0.50*t.v2_normalized
-    t['pressure_component']=0.50*t.pressure_rating
+    t['v2_component']=0.60*t.v2_normalized
+    t['pressure_component']=0.40*t.pressure_rating
     t['composite']=t.v2_component+t.pressure_component
     t['rating_pct']=t.composite
     t['final_score_200']=2*t.composite
