@@ -99,14 +99,11 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     if len(pool):
         # Low economy and high improvement both better; 50/50, confidence shrinkage.
         eco=t.loc[pool,'pressure_economy'].rank(ascending=False,pct=True,method='average')*100
-        # Improvement credit is earned only for a genuine reduction in economy.
-        # Rank positive improvements against other positive improvements; all
-        # non-positive or unavailable improvements receive zero credit.
+        # Consistent with batting: percentile-rank ALL improvements, including
+        # negative values. Lower pressure economy relative to the chase baseline
+        # means a higher improvement percentile. No player is disqualified.
         improvements=t.loc[pool,'economy_improvement_pct']
-        lift=pd.Series(0.0,index=pool)
-        positive=improvements.notna() & improvements.gt(0)
-        if positive.any():
-            lift.loc[improvements.index[positive]]=improvements.loc[positive].rank(ascending=True,pct=True,method='average')*100
+        lift=improvements.rank(ascending=True,pct=True,method='average').fillna(0)*100
         raw=(eco+lift)/2
         confidence=t.loc[pool,'pressure_balls']/(t.loc[pool,'pressure_balls']+60)
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
