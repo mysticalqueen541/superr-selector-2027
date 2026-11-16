@@ -402,7 +402,7 @@ with main_col:
             st.markdown('The six original batting situations use only pressure balls faced, retaining the original strike-rate bands and weights. Separately, pressure performance is assessed by situation and overall (60/40).')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling situation points use pressure deliveries only, with defending weighted twice as heavily as bowling first. Pressure includes early collapse, death overs and knockouts, plus **CRR > RRR** while defending. Lower pressure economy than overall economy earns improvement credit.')
+            st.markdown('Bowling pressure follows the supplied Excel definition only: **second innings, pre-delivery CRR > RRR**. Pressure-only situation points are therefore earned in defending phases; bowling-first pressure phases score zero. Lower pressure economy than overall economy earns improvement credit.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
         st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls the additional pressure-situation component; the base situation score also uses pressure deliveries. All formats recalculate from the original six CSVs.')
@@ -470,4 +470,4 @@ with main_col:
             q3,q4=st.columns(2,gap='medium')
             q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
             q4.metric('Final /200 (reference)',f'{b.final_score_200:.2f}')
-            st.caption('Bowling pressure includes collapse, death overs and knockouts in both innings, plus pre-delivery CRR > RRR when defending. All formats recalculate from the original six CSVs; rankings use the original points-based score.')
+            st.caption('Bowling pressure uses only the supplied Excel definition: second innings, pre-delivery CRR > RRR. Pressure-only bowling-first phases have zero points. All formats recalculate from the original six CSVs; rankings use the original points-based score.')
