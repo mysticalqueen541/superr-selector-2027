@@ -12,9 +12,7 @@ WEIGHTS = {'PP · Setting':2, 'PP · Chasing':4, 'Middle · Setting':1,
 # Retirement exclusion requires BOTH retired_t20i AND retired_ipl.
 # This review is dated 2026-11-14; future IPL 2027 auction status is not yet confirmed.
 
-# Shared read-only source frames: avoid deserializing the 40 MB CSV twice per rerun.
-# Both scoring functions call formats(), which makes an isolated copy before edits.
-@__import__('streamlit').cache_resource(show_spinner=False)
+@__import__('streamlit').cache_data(show_spinner=False)
 def load():
     d = pd.read_csv(DATA/'ball_by_ball.csv', low_memory=False)
     m = pd.read_csv(DATA/'matches.csv')
@@ -75,8 +73,6 @@ def exclusions():
 def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclude_pak_bang=True, min_situation_pressure_balls=20):
     d,m,c,mapping,eleven,teams=load()
     d=formats(d,choice)
-    # Match standard T20 innings only, consistent with bowling; exclude super overs.
-    d=d[d.innings.isin([1,2])].copy()
     # Eligible names are keyed by ID, not names (names can be ambiguous).
     if d.empty:return pd.DataFrame(),pd.DataFrame(),d,None
     names=d.groupby('striker_id')['striker_name'].agg(lambda s:s.mode().iat[0] if not s.mode().empty else s.iloc[0])
@@ -90,6 +86,10 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
                          ['PP','Middle','Death'],default='Other')
     d['context']=np.where(d.innings.isin([1,3]),'Setting','Chasing')
     d['situation']=d.phase+' · '+d.context
+    phases=d[d.situation.isin(WEIGHTS)].groupby(['striker_id','situation']).agg(
+        r=('bat_runs','sum'),b=('bat_ball','sum'))
+    all_situation_sr=phases.assign(sr=lambda t:np.where(t.b>0,t.r/t.b*100,np.nan))['sr'].unstack()
+    all_situation_sr=all_situation_sr.rename(columns={col:col+' all-ball SR' for col in all_situation_sr.columns})
     # Reconstruct PRE-DELIVERY match state from the UPDATED uploaded ball-by-ball CSV.
     # In this new CSV extras1_runs and extras_2_runs are numeric run amounts,
     # unlike the old file where extras1_runs held a categorical code.
@@ -128,12 +128,6 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     d['pressure_collapse']=collapse
     d['pressure_death']=death
     d['pressure_knockout']=d.is_knockout
-    # V2 base points use all deliveries; additional pressure points use the pressure-flagged subset.
-    v2_phases=d[d.situation.isin(WEIGHTS)].groupby(
-        ['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
-    all_situation_sr=v2_phases.assign(sr=lambda x:np.where(x.b>0,100*x.r/x.b,np.nan))['sr'].unstack()
-    all_situation_sr=all_situation_sr.rename(
-        columns={col:col+' all-ball SR' for col in all_situation_sr.columns})
     # Average Entry Pressure Gap: one observation per batter/chase innings.
     # Missing/undefined entries are excluded, never filled with zero.
     chase_entries=d[d.innings.isin([2,4]) & d.legal_bat_ball].copy()
@@ -141,13 +135,13 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     chase_entries=chase_entries.drop_duplicates(['striker_id','match_id','innings'],keep='first')
     chase_entries['entry_gap']=chase_entries['rrr_est']-chase_entries['crr_est']
     entry_gap=chase_entries.groupby('striker_id').agg(entry_gap=('entry_gap','mean'),valid_entries=('entry_gap','count'))
-    # Pressure flags are combined with OR, so a delivery is counted once in the pressure subset.
+    # Pressure deliveries remain a subset of the same original six V2 situations.
     # Group by player and situation to expose the actual pressure balls faced in each.
     pressure_situations=(d[d.pressure_flag & d.legal_bat_ball & d.situation.isin(WEIGHTS)]
         .groupby(['striker_id','situation']).agg(pressure_balls=('bat_ball','sum'),pressure_runs=('bat_runs','sum')))
     ps_balls=pressure_situations['pressure_balls'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
     ps_runs=pressure_situations['pressure_runs'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
-    # Pressure SR uses flagged deliveries; V2 uses all eligible deliveries.
+    # Pressure situation SR is for diagnostics only; six V2 score inputs use all deliveries.
     # No situation with zero batter-faced balls receives any points.
     pressure_situation_sr=(pressure_situations.assign(pressure_sr=lambda t:np.where(
         t.pressure_balls>0,100*t.pressure_runs/t.pressure_balls,np.nan))['pressure_sr']
@@ -164,33 +158,16 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     t[list(ps_balls.columns)+list(ps_runs.columns)]=t[list(ps_balls.columns)+list(ps_runs.columns)].fillna(0)
     for col in [*pressure.columns]:
         t[col]=t[col].fillna(0)
-    # Phase/context-matched NON-pressure baseline, weighted by the player's
-    # actual pressure-ball distribution across the original six situations.
-    # Do not let pressure balls contribute to their own comparison baseline.
-    nonpressure=(d[~d.pressure_flag & d.legal_bat_ball & d.situation.isin(WEIGHTS)]
-        .groupby(['striker_id','situation']).agg(base_balls=('bat_ball','sum'),base_runs=('bat_runs','sum')))
-    np_balls=nonpressure['base_balls'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
-    np_runs=nonpressure['base_runs'].unstack().reindex(columns=list(WEIGHTS),fill_value=0).fillna(0)
-    matched_balls=ps_balls.copy()
-    matched_balls.columns=[col.removesuffix(' pressure balls') for col in matched_balls.columns]
-    # Only contexts with observed non-pressure deliveries are comparable.
-    base_sr=100*np_runs.div(np_balls.replace(0,np.nan))
-    matched_weight=matched_balls.where(np_balls.reindex(matched_balls.index).gt(0),0)
-    matched_baseline=(base_sr.reindex(matched_balls.index).mul(matched_weight).sum(axis=1)
-                      /matched_weight.sum(axis=1).replace(0,np.nan))
-    t['matched_nonpressure_sr']=matched_baseline.reindex(t.index)
-    t['matched_baseline_balls']=np_balls.reindex(t.index).where(matched_weight.gt(0),0).sum(axis=1).fillna(0)
-    t['improvement_pct']=np.where(t.matched_nonpressure_sr>0,
-        (t.pressure_sr/t.matched_nonpressure_sr-1)*100,np.nan)
+    t['improvement_pct']=np.where(t.normal_sr>0,(t.pressure_sr/t.normal_sr-1)*100,0)
     t['improvement_ratio']=t.improvement_pct/100
     for col,weight in WEIGHTS.items():
-        # All-delivery situation SR for V2.
+        # All-ball situation SR, identical to original V2 batting method.
         # A situation with zero balls receives zero, not minimum 1 point.
         normal_col=f'{col} all-ball SR'
         if normal_col not in t: t[normal_col]=np.nan
         t[col+' points']=t[normal_col].apply(score_band)
     t['phase_score']=sum(t[col+' points']*w for col,w in WEIGHTS.items())
-    # Original six V2 weights retained, using all deliveries.
+    # Original six V2 points are immutable and use ALL batter-faced deliveries.
     # The independent pressure component now contains two sub-scores:
     # 60% six pressure-situation weighted points, 40% overall pressure reliability.
     # Each pressure situation receives ZERO if its pressure balls are below the slider threshold.
@@ -218,13 +195,13 @@ def calculate(choice='IPL + T20Is', min_pressure_balls=100, min_matches=9, exclu
     # Candidate exclusion never removes opposition deliveries from match statistics.
     pool=t.loc[t.eligible & ~t.excluded].copy()
     if not pool.empty:
-        # Reliability compares pressure performance to a phase-matched non-pressure baseline.
-        # Original six-situation V2 and additional pressure situation points are retained.
-        # Rank both positive and negative improvement; missing comparisons are
-        # neutral rather than fabricated improvements.
-        lift_pct=pool['improvement_pct'].rank(pct=True,method='average').fillna(0.5)*100
+        # Percentile method='average' gives tied values the same result.
+        # Absolute pressure SR and improvement against a player's own all-ball SR each get 50%.
+        sr_pct=pool['pressure_sr'].rank(pct=True,method='average')*100
+        lift_pct=pool['improvement_pct'].rank(pct=True,method='average')*100
+        raw_pressure=(sr_pct+lift_pct)/2
         confidence=pool['pressure_balls']/(pool['pressure_balls']+60.0)
-        pressure_rating=50+confidence*(lift_pct-50)
+        pressure_rating=50+confidence*(raw_pressure-50)
         t['overall_pressure_rating']=np.nan
         t.loc[pool.index,'overall_pressure_rating']=pressure_rating
     else:
