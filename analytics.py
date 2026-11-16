@@ -93,14 +93,17 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
     d=formats(d,choice)
     # Eligible names are keyed by ID, not names (names can be ambiguous).
     if d.empty:return pd.DataFrame(),pd.DataFrame(),d,None
-    names=d.groupby('striker_id')['striker_name'].agg(lambda s:s.mode().iat[0] if not s.mode().empty else s.iloc[0])
-    overall=d.groupby('striker_id').agg(runs=('bat_runs','sum'),balls=('bat_ball','sum'),
+    # Innings 3/4 are Super Overs in T20 cricket: retain source rows for audit
+    # and delivery coverage, but do not treat one-over tie-breaks as 20-over phases.
+    standard=d[d.innings.isin([1,2])].copy()
+    names=standard.groupby('striker_id')['striker_name'].agg(lambda s:s.mode().iat[0] if not s.mode().empty else s.iloc[0])
+    overall=standard.groupby('striker_id').agg(runs=('bat_runs','sum'),balls=('bat_ball','sum'),
       boundaries=('boundary','sum'), boundary_runs=('boundary_runs','sum'),
       matches=('match_id','nunique'))
     overall['normal_sr']=np.where(overall.balls>0,overall.runs/overall.balls*100,0)
     overall['boundary_pct']=np.where(overall.balls>0,overall.boundaries/overall.balls*100,0)
     overall['name']=names
-    d['phase']=np.select([d.overid.between(1,6),d.overid.between(7,15),d.overid.between(16,20)],
+    d['phase']=np.select([d.innings.isin([1,2]) & d.overid.between(1,6),d.innings.isin([1,2]) & d.overid.between(7,15),d.innings.isin([1,2]) & d.overid.between(16,20)],
                          ['PP','Middle','Death'],default='Other')
     d['context']=np.where(d.innings.isin([1,3]),'Setting','Chasing')
     d['situation']=d.phase+' · '+d.context
@@ -138,19 +141,19 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
     d['is_knockout']=d.knock_out.astype(str).str.lower().isin(['1','true','yes']) | d.stage.fillna('').str.contains('final|qualifier|eliminator|semi',case=False,regex=True)
     # Chase rate must exceed current rate and reach at least 9.0.
     chase_pressure=(~d.match_id.isin(unreliable_chase_ids()) & d.innings.eq(2)&d.overid.ge(7)&d.rrr_est.ge(9.0)&(d.rrr_est>d.crr_est))
-    collapse=(d.overid.le(10)&d.wickets_before.ge(3))
-    death=(d.overid.ge(16))
-    d['pressure_flag']=chase_pressure | collapse | death | d.is_knockout
+    collapse=(d.innings.isin([1,2]) & d.overid.le(10)&d.wickets_before.ge(3))
+    death=(d.innings.isin([1,2]) & d.overid.ge(16))
+    d['pressure_flag']=(d.innings.isin([1,2])) & (chase_pressure | collapse | death | d.is_knockout)
     d['pressure_chase']=chase_pressure
     d['pressure_collapse']=collapse
     d['pressure_death']=death
-    d['pressure_knockout']=d.is_knockout
+    d['pressure_knockout']=d.is_knockout & d.innings.isin([1,2])
     phases=d[d.situation.isin(WEIGHTS)].groupby(['striker_id','situation']).agg(r=('bat_runs','sum'),b=('bat_ball','sum'))
     all_situation_sr=phases.assign(sr=lambda x:np.where(x.b>0,100*x.r/x.b,np.nan))['sr'].unstack()
     all_situation_sr=all_situation_sr.rename(columns={col:col+' all-ball SR' for col in all_situation_sr.columns})
     # Average Entry Pressure Gap: one observation per batter/chase innings.
     # Missing/undefined entries are excluded, never filled with zero.
-    chase_entries=d[d.innings.isin([2,4]) & d.legal_bat_ball].copy()
+    chase_entries=d[d.innings.eq(2) & d.legal_bat_ball].copy()
     chase_entries=chase_entries.sort_values(['match_id','innings','innings_ball_num'],kind='stable')
     chase_entries=chase_entries.drop_duplicates(['striker_id','match_id','innings'],keep='first')
     chase_entries['entry_gap']=chase_entries['rrr_est']-chase_entries['crr_est']
