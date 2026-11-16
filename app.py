@@ -414,7 +414,9 @@ with main_col:
         with bowl_col:
             st.markdown('**Bowlers**')
             st.markdown('Six economy-based situations: bowling first ×2, defending ×4. Pressure is measured separately while defending (CRR > RRR).')
-        st.latex(r'\mathrm{Final}_{/200}=2\left(0.50\times\mathrm{Situation}_{/100}+0.50\times\mathrm{Pressure}_{/100}\right)')
+        st.markdown('**Final score: 50% situation + 50% pressure (maximum 200 points).**')
+        st.latex(r'\\mathrm{Final}_{/200}=\\mathrm{Situation}_{/100}+\\mathrm{Pressure}_{/100}')
+        st.caption('Within the pressure half only: 60% pressure-situation performance + 40% overall pressure reliability. Both parts are scored out of 100 before combining.')
         st.markdown('### Minimum sample and source coverage')
         st.markdown('At least **9 matches** and the selected pressure-ball minimum. Source CSVs support batting and format-specific bowling; combined bowling uses Excel-derived tables.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 50/50 batting and bowling combinations are scouting models, not validated predictions.')
