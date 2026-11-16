@@ -2,7 +2,7 @@
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from analytics import load,formats,exclusions
+from analytics import load,formats,exclusions,unreliable_chase_ids
 
 SITUATIONS={'PP · Bowling first':2,'Middle · Bowling first':2,'Death · Bowling first':2,
             'PP · Defending':4,'Middle · Defending':4,'Death · Defending':4}
@@ -51,7 +51,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
     need=d.target-d.runs_before
     d['rrr']=np.where(d.innings.eq(2)&(remaining>0)&(need>0),6*need/remaining,np.nan)
     # Exact workbook direction: defending side pressured when chasing side CRR > RRR.
-    d['pressure']=d.innings.eq(2)&d.crr.notna()&d.rrr.notna()&(d.crr>d.rrr)
+    d['pressure']=(~d.match_id.isin(unreliable_chase_ids()))&d.innings.eq(2)&d.crr.notna()&d.rrr.notna()&(d.crr>d.rrr)
     d['phase']=np.select([d.overid.between(1,6),d.overid.between(7,15),d.overid.between(16,20)],['PP','Middle','Death'],default='Other')
     d['situation']=d.phase+' · '+np.where(d.innings.eq(1),'Bowling first','Defending')
     d=d[d.situation.isin(SITUATIONS)].copy()
