@@ -239,8 +239,8 @@ def calculate(choice='All', min_pressure_balls=100, min_matches=9, exclude_pak_b
         t['overall_pressure_rating']=np.nan
     t['pressure_rating']=0.60*t.pressure_six_normalized+0.40*t.overall_pressure_rating
     t['pressure_confidence']=t.pressure_balls/(t.pressure_balls+60.0)
-    t['v2_component']=0.60*t.v2_normalized
-    t['pressure_component']=0.40*t.pressure_rating
+    t['v2_component']=0.40*t.v2_normalized
+    t['pressure_component']=0.60*t.pressure_rating
     t['composite']=t.v2_component+t.pressure_component
     t['rating_pct']=t.composite
     t['final_score_200']=2*t.composite
