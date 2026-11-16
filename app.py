@@ -171,21 +171,21 @@ with cards_slot.container():
         st.markdown(f'<div class="leader-card summary-card"><div class="leader-label">{html.escape(label)}</div><div class="summary-value">{value:,}</div></div>',unsafe_allow_html=True)
     with card1: count_card('Deliveries Analyzed',all_delivery_count)
     with card2: count_card('Pressure Deliveries',pressure_count)
-    def leader_card(title, data):
+    def leader_card(title, data, improvement_col):
         if data.empty:
             st.markdown(f'<div class="leader-card"><div class="leader-label">{html.escape(title)}</div><div class="leader-name">No eligible player</div></div>', unsafe_allow_html=True)
             return
         player=html.escape(str(data.iloc[0]['name']))
-        score=float(data.iloc[0]['final_score_200'])
-        fill=max(0.0,min(100.0,score/200.0*100.0))
+        score=float(data.iloc[0][improvement_col])
+        fill=max(0.0,min(100.0,50.0+score/2.0))
         st.markdown(f"""<div class="leader-card">
             <div class="leader-label">{html.escape(title)}</div>
             <div class="leader-name">{player}</div>
-            <div class="leader-score">{score:.2f} <span>/ 200</span></div>
-            <div class="leader-meter" role="img" aria-label="Rating {score:.2f} out of 200"><div class="leader-meter-fill" style="width:{fill:.2f}%"></div></div>
+            <div class="leader-score">{score:+.2f}% <span>improvement</span></div>
+            <div class="leader-meter" role="img" aria-label="Improvement {score:+.2f} percent"><div class="leader-meter-fill" style="width:{fill:.2f}%"></div></div>
         </div>""", unsafe_allow_html=True)
-    with card3: leader_card('Top Batter',ranked)
-    with card4: leader_card('Top Bowler',bowl_rank)
+    with card3: leader_card('Top Batter',ranked,'improvement_pct')
+    with card4: leader_card('Top Bowler',bowl_rank,'economy_improvement_pct')
 
 with main_col:
     page=st.radio('Dashboard page',['Batters','Bowlers','Methodology'],horizontal=True,label_visibility='collapsed',key='page_navigation')
@@ -283,7 +283,7 @@ def top_ten_table(data):
                     f"<span class='score-value'>{float(r['composite'])*2:.2f}/200</span></div></td></tr>")
     st.markdown('''<div class="table-wrap"><table class="rr-table"><thead><tr>
         <th>Rank</th><th>Batter</th><th>Pressure balls</th><th>Pressure runs</th>
-        <th>Pressure SR</th><th>Overall SR</th><th>SR Improvement</th><th>Final score /200</th>
+        <th>Pressure SR</th><th>Overall SR</th><th>SR Improvement (rank)</th><th>Final score /200 (reference)</th>
         </tr></thead><tbody>'''+''.join(rows)+'</tbody></table></div>',unsafe_allow_html=True)
 
 with main_col:
@@ -293,7 +293,7 @@ with main_col:
         if ranked.empty:
             st.info('No eligible batters at this setting. Reduce the minimum pressure-ball requirement or change the competition.')
         else:
-            heading('Top 10 batters under pressure')
+            heading('Top 10 batters by SR improvement','Pressure situation points break ties')
             top_ten_table(ranked)
             chart_left,chart_right=st.columns(2,gap='large')
             with chart_left:
@@ -308,11 +308,12 @@ with main_col:
             labels={int(r.player_id):f"#{int(r['rank'])}  ·  {r['name']}" for _,r in ranked.iterrows()}
             chosen=st.selectbox('Choose a batter',ids,format_func=lambda x:labels.get(x,str(x)))
             r=ranked.set_index('player_id').loc[chosen]
-            m1,m2,m3,m4=st.columns(4,gap='medium')
-            m1.metric('Final score /200',f'{r.final_score_200:.2f} / 200')
+            m1,m2=st.columns(2,gap='medium')
+            m1.metric('SR Improvement (ranking)',f'{r.improvement_pct:+.2f}%')
             m2.metric('Pressure SR',f'{r.pressure_sr:.2f}')
-            m3.metric('Pressure boundary %',f'{r.pressure_boundary_pct:.2f}%')
-            m4.metric('SR Improvement',f'{r.improvement_pct:+.2f}%')
+            m3,m4=st.columns(2,gap='medium')
+            m3.metric('Pressure situation score /180',f'{r.pressure_six_score:.0f}')
+            m4.metric('Final /200 (reference)',f'{r.final_score_200:.2f}')
             rating_bar(r.composite,r['rank'],len(ranked))
     elif page=='Methodology':
         heading('How the rankings are built')
@@ -339,7 +340,8 @@ with main_col:
                 st.plotly_chart(fig,use_container_width=True,config={'displayModeBar':False})
             st.caption('Overlapping conditions count as one pressure delivery in the final total.')
         st.divider()
-        st.markdown('### How points are combined')
+        st.markdown('### How points are combined and players ranked')
+        st.caption('Rankings prioritize improvement percentage: pressure SR versus overall SR for batters, and pressure economy versus chase economy for bowlers. Pressure situation points break ties. The /200 score is a reference metric.')
         st.caption('Green ↑ means improvement; red ↓ means a decline. These indicators display existing metrics and do not add points.')
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
@@ -350,13 +352,13 @@ with main_col:
             st.markdown('Bowling situation points follow the final economy-percentile workbook. For bowlers defending a target, **CRR > RRR** marks pressure; the analysis compares economy rates in those deliveries and across the chase.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring, not the original V2 points. Combined bowling uses the final Excel workbooks and their excluded-chase audit; IPL-only and T20I-only views recalculate from deliveries.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring, not the original V2 points. All formats recalculate from the original six CSVs.')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
         else:
-            heading('Top 10 bowlers under pressure')
+            heading('Top 10 bowlers by economy improvement','Pressure situation points break ties')
             top=bowl_rank.head(10).copy()
             top['Bowler']=top['name']
             top['Final /200']=top.final_score_200.round(2)
@@ -391,7 +393,7 @@ with main_col:
                 bowler_rows.append('<tr>'+''.join(f'<td>{cell}</td>' if i==4 else f'<td>{html.escape(str(cell))}</td>' for i,cell in enumerate(cells))+'</tr>')
             headers=['Bowler','Pressure Balls','Pressure Economy','Chase Economy','Economy Improvement (%)','Pressure Dot-Ball %','Total Wickets','Final Rating /200']
             st.markdown('<div class="table-wrap"><table class="rr-table"><thead><tr>'+''.join(f'<th>{html.escape(h)}</th>' for h in headers)+'</tr></thead><tbody>'+''.join(bowler_rows)+'</tbody></table></div>',unsafe_allow_html=True)
-            st.caption('Economy Improvement (%) = (Chase Economy − Pressure Economy) / Chase Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Only positive improvement earns improvement credit in Pressure Reliability. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
+            st.caption('Economy Improvement (%) = (Chase Economy − Pressure Economy) / Chase Economy × 100. Positive means fewer runs conceded per over under pressure; negative means more. Improvement percentage determines rank, with pressure situation points breaking ties. No arrows are used. Pressure Dot-Ball % is display-only and does not affect the rating.')
             import plotly.express as px
             left_chart,right_chart=st.columns(2,gap='large')
             with left_chart:
@@ -409,9 +411,10 @@ with main_col:
             heading('Bowler spotlight')
             selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
             b=bowl_rank.loc[selected]
-            q1,q2,q3,q4=st.columns(4)
-            q1.metric('Final /200',f'{b.final_score_200:.2f}')
+            q1,q2=st.columns(2,gap='medium')
+            q1.metric('Economy Improvement (ranking)',f'{b.economy_improvement_pct:+.2f}%')
             q2.metric('Pressure economy',f'{b.pressure_economy:.2f}')
-            q3.metric('Pressure wickets',int(b.pressure_wickets))
-            q4.metric('Pressure balls',int(b.pressure_balls))
-            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. Combined-format V2 and pressure figures are imported from the final workbooks; format-specific views are recalculated from deliveries. The excluded-chase audit is bundled.')
+            q3,q4=st.columns(2,gap='medium')
+            q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
+            q4.metric('Final /200 (reference)',f'{b.final_score_200:.2f}')
+            st.caption('Bowling pressure follows your final Excel: second innings only, pre-delivery CRR > RRR. All formats recalculate from the original six CSVs; rankings prioritize economy improvement percentage.')
