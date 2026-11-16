@@ -111,7 +111,7 @@ def calculate_bowling(choice='IPL + T20Is',min_pressure_balls=100,min_situation_
         confidence=t.loc[pool,'pressure_balls']/(t.loc[pool,'pressure_balls']+60)
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
     t['pressure_rating']=.60*t.pressure_six_normalized+.40*t.overall_pressure_rating
-    t['final_score_200']=2*(.70*t.v2_normalized+.30*t.pressure_rating)
+    t['final_score_200']=2*(.50*t.v2_normalized+.50*t.pressure_rating)
     ranked=t.loc[pool].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     return ranked,t,d
@@ -185,7 +185,7 @@ def calculate_bowling_final(choice='IPL + T20Is',min_pressure_balls=100,min_situ
         confidence=t.loc[pool,'pressure_balls']/(t.loc[pool,'pressure_balls']+60)
         t.loc[pool,'overall_pressure_rating']=50+confidence*(raw-50)
     t['pressure_rating']=.60*t.pressure_six_normalized+.40*t.overall_pressure_rating
-    t['final_score_200']=2*(.70*t.v2_normalized+.30*t.pressure_rating)
+    t['final_score_200']=2*(.50*t.v2_normalized+.50*t.pressure_rating)
     ranked=t.loc[pool].sort_values(['final_score_200','pressure_balls','name'],ascending=[False,False,True]).copy()
     ranked.insert(0,'rank',range(1,len(ranked)+1))
     # No raw deliveries are returned: pressure workbook provides the validated
