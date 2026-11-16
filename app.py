@@ -182,8 +182,8 @@ with st.sidebar:
         help='A player must face at least this many pressure deliveries to qualify. This is a minimum, not a maximum.'
     )
     situation_threshold=st.slider(
-        'Minimum balls per pressure situation (diagnostic)',min_value=5,max_value=50,value=20,step=5,
-        help='Controls pressure-situation diagnostic points only; final pressure uplift uses overall phase-matched improvement.'
+        'Minimum balls per pressure situation',min_value=5,max_value=50,value=20,step=5,
+        help='Pressure situations below this ball threshold receive zero pressure-situation points; original V2 scores are unaffected.'
     )
 
 
@@ -385,13 +385,13 @@ with main_col:
         bat_col,bowl_col=st.columns(2,gap='large')
         with bat_col:
             st.markdown('**Batters**')
-            st.markdown('Original six-situation V2 scores are unchanged and use all deliveries. The additional 30% scores only the percentile of strike-rate improvement versus phase-matched non-pressure balls, adjusted for pressure sample size. Pressure six-situation diagnostics are not added to the final score.')
+            st.markdown('Original six-situation V2 scores are unchanged and use all deliveries. The additional 30% awards points for pressure performance: 60% pressure six-situation points and 40% phase-matched strike-rate improvement reliability. Pressure deliveries are also part of original V2.')
         with bowl_col:
             st.markdown('**Bowlers**')
-            st.markdown('Bowling V2 situation points are unchanged and use all deliveries. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% scores only economy improvement versus phase-matched non-pressure defending deliveries, adjusted for pressure sample size.')
+            st.markdown('Bowling V2 situation points are unchanged and use all deliveries. For bowlers defending a target, **CRR > RRR** marks pressure. The additional 30% awards points for pressure performance: 60% pressure six-situation economy points and 40% phase-matched economy improvement reliability.')
         st.latex(r'\mathrm{Final}_{/200}=2\left(0.70\times\mathrm{V2}_{/100}+0.30\times\mathrm{Pressure}_{/100}\right)')
         st.markdown('### Minimum sample and source coverage')
-        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. Original V2 uses all deliveries; the additional pressure score rewards relative improvement only, not absolute pressure SR/economy a second time.')
+        st.markdown('At least **9 matches** and the selected pressure-ball minimum. The situation slider controls pressure-situation scoring. Both rankings recalculate from the six CSVs. Original V2 uses all deliveries; the additional pressure score rewards both pressure-situation performance and relative improvement (60/40).')
         st.caption('Run-rate estimates and auction eligibility require independent checks. The 70/30 combination is a scouting model, not a validated prediction.')
     elif page=='Bowlers':
         if bowl_rank.empty:
