@@ -383,6 +383,17 @@ with main_col:
         else:
             heading('Top 10 batters under pressure','Ranked by combined situation and pressure score /200')
             top_ten_table(ranked)
+            batting_export_columns=['rank','name','matches','balls','runs','normal_sr','pressure_balls',
+                'pressure_runs','pressure_sr','improvement_pct','v2_normalized',
+                'pressure_six_normalized','overall_pressure_rating','pressure_rating','final_score_200']
+            batting_export=ranked[[col for col in batting_export_columns if col in ranked.columns]].copy()
+            st.download_button(
+                'Download batting rankings CSV',
+                data=batting_export.to_csv(index=False).encode('utf-8-sig'),
+                file_name=f'superr_selector_batting_{fmt.lower()}_pressure_{threshold}_situation_{situation_threshold}.csv',
+                mime='text/csv',
+                key='download_batting_rankings'
+            )
             chart_left,chart_right=st.columns(2,gap='large')
             with chart_left:
                 chart_heading('Strike-rate comparison','Overall vs pressure SR · Top 10')
@@ -450,6 +461,18 @@ with main_col:
             st.warning('No bowlers meet the selected pressure-ball and match thresholds. Lower the minimum pressure balls or change the competition.')
         else:
             heading('Top 10 bowlers under pressure','Ranked by combined situation and pressure score /200')
+            bowling_export_columns=['rank','name','matches','balls','wickets','economy',
+                'pressure_balls','pressure_wickets','pressure_economy','chase_economy',
+                'economy_improvement_pct','v2_normalized','pressure_six_normalized',
+                'overall_pressure_rating','pressure_rating','final_score_200']
+            bowling_export=bowl_rank[[col for col in bowling_export_columns if col in bowl_rank.columns]].copy()
+            st.download_button(
+                'Download bowling rankings CSV',
+                data=bowling_export.to_csv(index=False).encode('utf-8-sig'),
+                file_name=f'superr_selector_bowling_{fmt.lower()}_pressure_{threshold}_situation_{situation_threshold}.csv',
+                mime='text/csv',
+                key='download_bowling_rankings'
+            )
             top=bowl_rank.head(10).copy()
             top['Bowler']=top['name']
             top['Final /200']=top.final_score_200.round(2)
