@@ -98,12 +98,13 @@ hr{border-color:#34415D!important}
 .delta-up{color:#47D79B!important;font-weight:800;white-space:nowrap}.delta-down{color:#FF647E!important;font-weight:800;white-space:nowrap}.delta-flat{color:#C6D2E7!important;font-weight:700;white-space:nowrap}
 @media(max-width:1250px){[data-testid="stMetricValue"]{font-size:1.1rem!important}[data-testid="stMetric"]{padding:12px!important}}
 
-/* Player spotlight: compact cards with fixed geometry, independent of Streamlit metric defaults. */
-.spotlight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 14px;max-width:760px}
-.spotlight-tile{aspect-ratio:auto;height:84px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:10px 14px;background:linear-gradient(145deg,#18284B,#101B35);border:2px solid rgba(255,95,169,.72);border-radius:15px;min-width:0;min-height:0}
-.spotlight-label{color:#B3C0DD;font-size:clamp(11px,1vw,13px);font-weight:650;line-height:1.3;margin-bottom:7px;overflow-wrap:anywhere}
-.spotlight-value{color:#FFF;font:800 clamp(17px,1.7vw,24px) 'Outfit',sans-serif;line-height:1.1}
-@media(max-width:760px){.spotlight-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:100%}.spotlight-tile{height:78px;padding:9px 10px;border-radius:12px}.spotlight-label{font-size:10px}.spotlight-value{font-size:17px}}
+/* Player spotlight: understated, balanced 2-by-2 stat tiles. */
+.spotlight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 18px;width:100%;max-width:760px}
+.spotlight-tile{box-sizing:border-box;min-width:0;height:76px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:11px 17px;background:#142241;border:1px solid #34496D;border-left:3px solid #FF5FA9;border-radius:10px;box-shadow:none}
+.spotlight-label{color:#AFC1DE;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;line-height:1.2;margin:0 0 6px;overflow-wrap:break-word}
+.spotlight-value{color:#F6F8FF;font-family:'Outfit',sans-serif;font-weight:750;font-size:23px;letter-spacing:-.025em;line-height:1.1;margin:0}
+@media(max-width:760px){.spotlight-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:100%;margin:10px 0 14px}.spotlight-tile{height:72px;padding:9px 11px;border-radius:9px}.spotlight-label{font-size:10.5px;line-height:1.15;margin-bottom:5px}.spotlight-value{font-size:19px}}
+@media(max-width:360px){.spotlight-label{font-size:10px}.spotlight-value{font-size:17px}}
 /* Compact and aligned player spotlight metrics on desktop and mobile. */
 [data-testid="stMetric"]{min-height:96px!important;padding:12px 16px!important;justify-content:center!important}
 [data-testid="stMetricLabel"]{margin-bottom:4px!important}
