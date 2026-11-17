@@ -98,23 +98,12 @@ hr{border-color:#34415D!important}
 .delta-up{color:#47D79B!important;font-weight:800;white-space:nowrap}.delta-down{color:#FF647E!important;font-weight:800;white-space:nowrap}.delta-flat{color:#C6D2E7!important;font-weight:700;white-space:nowrap}
 @media(max-width:1250px){[data-testid="stMetricValue"]{font-size:1.1rem!important}[data-testid="stMetric"]{padding:12px!important}}
 
-/* Align spotlight selector, 2x2 cards and rating meter to one consistent width. */
-.st-key-spotlight_dropdown,.st-key-spotlight_rating{width:100%;max-width:760px!important}
-.st-key-spotlight_dropdown [data-testid="stSelectbox"]{width:100%!important;margin-bottom:0!important}
-.st-key-spotlight_dropdown [data-baseweb="select"]>div{min-height:42px!important;border-radius:10px!important}
-.st-key-spotlight_rating .rating-card{width:100%;max-width:100%;box-sizing:border-box;margin:0 0 14px;padding:14px 17px;border-radius:10px;box-shadow:none;border:1px solid #34496D;border-left:3px solid #FF5FA9;background:#142241}
-.st-key-spotlight_rating .rating-top{font-size:13px;gap:8px}
-.st-key-spotlight_rating .rating-num{font-size:20px}
-.st-key-spotlight_rating .track{height:8px;margin:10px 0 7px}
-.st-key-spotlight_rating .fineprint{font-size:11px;line-height:1.4}
-@media(max-width:760px){.st-key-spotlight_dropdown,.st-key-spotlight_rating{max-width:100%!important}.st-key-spotlight_rating .rating-card{padding:11px 12px}.st-key-spotlight_rating .rating-num{font-size:17px}}
-/* Player spotlight: understated, balanced 2-by-2 stat tiles. */
-.spotlight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 18px;width:100%;max-width:760px}
-.spotlight-tile{box-sizing:border-box;min-width:0;height:76px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:11px 17px;background:#142241;border:1px solid #34496D;border-left:3px solid #FF5FA9;border-radius:10px;box-shadow:none}
-.spotlight-label{color:#AFC1DE;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;line-height:1.2;margin:0 0 6px;overflow-wrap:break-word}
-.spotlight-value{color:#F6F8FF;font-family:'Outfit',sans-serif;font-weight:750;font-size:23px;letter-spacing:-.025em;line-height:1.1;margin:0}
-@media(max-width:760px){.spotlight-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:100%;margin:10px 0 14px}.spotlight-tile{height:72px;padding:9px 11px;border-radius:9px}.spotlight-label{font-size:10.5px;line-height:1.15;margin-bottom:5px}.spotlight-value{font-size:19px}}
-@media(max-width:360px){.spotlight-label{font-size:10px}.spotlight-value{font-size:17px}}
+/* Small, square spotlight cards; dropdown and rating meter retain original styling. */
+.spotlight-grid{display:grid;grid-template-columns:repeat(4,minmax(0,136px));gap:10px;margin:8px 0 14px;width:100%}
+.spotlight-tile{box-sizing:border-box;aspect-ratio:1/1;width:100%;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:12px;background:linear-gradient(145deg,#18284B,#101B35);border:2px solid rgba(255,95,169,.72);border-radius:14px}
+.spotlight-label{color:#B3C0DD;font-size:11px;font-weight:650;line-height:1.25;margin-bottom:7px;overflow-wrap:anywhere}
+.spotlight-value{color:#FFF;font:800 19px 'Outfit',sans-serif;line-height:1.1}
+@media(max-width:760px){.spotlight-grid{grid-template-columns:repeat(2,minmax(0,136px));gap:9px}.spotlight-tile{padding:10px;border-radius:12px}.spotlight-label{font-size:10px}.spotlight-value{font-size:18px}}
 /* Compact and aligned player spotlight metrics on desktop and mobile. */
 [data-testid="stMetric"]{min-height:96px!important;padding:12px 16px!important;justify-content:center!important}
 [data-testid="stMetricLabel"]{margin-bottom:4px!important}
@@ -423,8 +412,7 @@ with main_col:
             heading('Batter spotlight','Select a ranked batter to view the same core performance metrics.')
             ids=ranked['player_id'].astype(int).tolist()
             labels={int(r.player_id):f"#{int(r['rank'])}  ·  {r['name']}" for _,r in ranked.iterrows()}
-            with st.container(key='spotlight_dropdown'):
-                chosen=st.selectbox('Choose a batter',ids,format_func=lambda x:labels.get(x,str(x)))
+            chosen=st.selectbox('Choose a batter',ids,format_func=lambda x:labels.get(x,str(x)))
             r=ranked.set_index('player_id').loc[chosen]
             spotlight_metrics([
                 ('SR Improvement',f'{r.improvement_pct:+.2f}%'),
@@ -432,8 +420,7 @@ with main_col:
                 ('Pressure situation score /180',f'{r.pressure_six_score:.0f}'),
                 ('Final /200',f'{r.final_score_200:.2f}')
             ])
-            with st.container(key='spotlight_rating'):
-                rating_bar(r.composite,r['rank'],len(ranked))
+            rating_bar(r.composite,r['rank'],len(ranked))
     elif page=='Methodology':
         heading('How the rankings are built')
         pressure_cards=[
@@ -530,8 +517,7 @@ with main_col:
                     margin=dict(l=60,r=20,t=25,b=65),coloraxis_showscale=False,xaxis_title='Chase economy',yaxis_title='Pressure economy')
                 st.plotly_chart(bubble,use_container_width=True,config={'displayModeBar':False})
             heading('Bowler spotlight')
-            with st.container(key='spotlight_dropdown'):
-                selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
+            selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
             b=bowl_rank.loc[selected]
             spotlight_metrics([
                 ('Economy Improvement',f'{b.economy_improvement_pct:+.2f}%'),
