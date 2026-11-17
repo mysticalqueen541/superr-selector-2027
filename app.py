@@ -374,18 +374,7 @@ def top_ten_table(data):
         <th>Pressure SR</th><th>Overall SR</th><th>SR Improvement</th><th>Final score /200</th>
         </tr></thead><tbody>'''+''.join(rows)+'</tbody></table></div>',unsafe_allow_html=True)
 
-from pdf_export import export_dashboard_pdf
-dashboard_pdf=export_dashboard_pdf(
-    ranked,bowl_rank,fmt,threshold,situation_threshold,
-    all_delivery_count,pressure_count
-)
-st.download_button(
-    'Download entire dashboard as PDF',
-    data=dashboard_pdf,
-    file_name=f'superr_selector_dashboard_{fmt.lower()}_pressure_{threshold}_situation_{situation_threshold}.pdf',
-    mime='application/pdf',
-    key='download_full_dashboard_pdf'
-)
+st.caption('To save this exact dashboard page as PDF: use your browser\'s Print command and choose Save as PDF. Switch between Batters and Bowlers to export each page.')
 
 with main_col:
     if page=='Batters':
