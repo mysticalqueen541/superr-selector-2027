@@ -98,6 +98,16 @@ hr{border-color:#34415D!important}
 .delta-up{color:#47D79B!important;font-weight:800;white-space:nowrap}.delta-down{color:#FF647E!important;font-weight:800;white-space:nowrap}.delta-flat{color:#C6D2E7!important;font-weight:700;white-space:nowrap}
 @media(max-width:1250px){[data-testid="stMetricValue"]{font-size:1.1rem!important}[data-testid="stMetric"]{padding:12px!important}}
 
+/* Align spotlight selector, 2x2 cards and rating meter to one consistent width. */
+.st-key-spotlight_dropdown,.st-key-spotlight_rating{width:100%;max-width:760px!important}
+.st-key-spotlight_dropdown [data-testid="stSelectbox"]{width:100%!important;margin-bottom:0!important}
+.st-key-spotlight_dropdown [data-baseweb="select"]>div{min-height:42px!important;border-radius:10px!important}
+.st-key-spotlight_rating .rating-card{width:100%;max-width:100%;box-sizing:border-box;margin:0 0 14px;padding:14px 17px;border-radius:10px;box-shadow:none;border:1px solid #34496D;border-left:3px solid #FF5FA9;background:#142241}
+.st-key-spotlight_rating .rating-top{font-size:13px;gap:8px}
+.st-key-spotlight_rating .rating-num{font-size:20px}
+.st-key-spotlight_rating .track{height:8px;margin:10px 0 7px}
+.st-key-spotlight_rating .fineprint{font-size:11px;line-height:1.4}
+@media(max-width:760px){.st-key-spotlight_dropdown,.st-key-spotlight_rating{max-width:100%!important}.st-key-spotlight_rating .rating-card{padding:11px 12px}.st-key-spotlight_rating .rating-num{font-size:17px}}
 /* Player spotlight: understated, balanced 2-by-2 stat tiles. */
 .spotlight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 18px;width:100%;max-width:760px}
 .spotlight-tile{box-sizing:border-box;min-width:0;height:76px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:11px 17px;background:#142241;border:1px solid #34496D;border-left:3px solid #FF5FA9;border-radius:10px;box-shadow:none}
@@ -413,7 +423,8 @@ with main_col:
             heading('Batter spotlight','Select a ranked batter to view the same core performance metrics.')
             ids=ranked['player_id'].astype(int).tolist()
             labels={int(r.player_id):f"#{int(r['rank'])}  ·  {r['name']}" for _,r in ranked.iterrows()}
-            chosen=st.selectbox('Choose a batter',ids,format_func=lambda x:labels.get(x,str(x)))
+            with st.container(key='spotlight_dropdown'):
+                chosen=st.selectbox('Choose a batter',ids,format_func=lambda x:labels.get(x,str(x)))
             r=ranked.set_index('player_id').loc[chosen]
             spotlight_metrics([
                 ('SR Improvement',f'{r.improvement_pct:+.2f}%'),
@@ -421,7 +432,8 @@ with main_col:
                 ('Pressure situation score /180',f'{r.pressure_six_score:.0f}'),
                 ('Final /200',f'{r.final_score_200:.2f}')
             ])
-            rating_bar(r.composite,r['rank'],len(ranked))
+            with st.container(key='spotlight_rating'):
+                rating_bar(r.composite,r['rank'],len(ranked))
     elif page=='Methodology':
         heading('How the rankings are built')
         pressure_cards=[
@@ -518,7 +530,8 @@ with main_col:
                     margin=dict(l=60,r=20,t=25,b=65),coloraxis_showscale=False,xaxis_title='Chase economy',yaxis_title='Pressure economy')
                 st.plotly_chart(bubble,use_container_width=True,config={'displayModeBar':False})
             heading('Bowler spotlight')
-            selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
+            with st.container(key='spotlight_dropdown'):
+                selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
             b=bowl_rank.loc[selected]
             spotlight_metrics([
                 ('Economy Improvement',f'{b.economy_improvement_pct:+.2f}%'),
