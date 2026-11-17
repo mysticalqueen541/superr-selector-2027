@@ -98,6 +98,12 @@ hr{border-color:#34415D!important}
 .delta-up{color:#47D79B!important;font-weight:800;white-space:nowrap}.delta-down{color:#FF647E!important;font-weight:800;white-space:nowrap}.delta-flat{color:#C6D2E7!important;font-weight:700;white-space:nowrap}
 @media(max-width:1250px){[data-testid="stMetricValue"]{font-size:1.1rem!important}[data-testid="stMetric"]{padding:12px!important}}
 
+/* Player spotlight: compact cards with fixed geometry, independent of Streamlit metric defaults. */
+.spotlight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 12px}
+.spotlight-tile{height:88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:12px 16px;background:linear-gradient(145deg,#18284B,#101B35);border:2px solid rgba(255,95,169,.72);border-radius:14px;min-width:0}
+.spotlight-label{color:#B3C0DD;font-size:12px;font-weight:650;line-height:1.25;margin-bottom:5px}
+.spotlight-value{color:#FFF;font:800 21px 'Outfit',sans-serif;line-height:1.1}
+@media(max-width:760px){.spotlight-grid{gap:8px}.spotlight-tile{height:74px;padding:9px 11px;border-radius:11px}.spotlight-label{font-size:11px}.spotlight-value{font-size:18px}}
 /* Compact and aligned player spotlight metrics on desktop and mobile. */
 [data-testid="stMetric"]{min-height:96px!important;padding:12px 16px!important;justify-content:center!important}
 [data-testid="stMetricLabel"]{margin-bottom:4px!important}
@@ -355,6 +361,15 @@ def improvement_indicator(value, suffix='', decimals=2):
     arrow='↑' if value>0 else '↓' if value<0 else '→'
     return f'<span class="{css}">{arrow} {value:+.{decimals}f}{html.escape(suffix)}</span>'
 
+def spotlight_metrics(items):
+    cards=''.join(
+        f'<div class="spotlight-tile"><div class="spotlight-label">{html.escape(label)}</div>'
+        f'<div class="spotlight-value">{html.escape(str(value))}</div></div>'
+        for label,value in items
+    )
+    st.markdown(f'<div class="spotlight-grid">{cards}</div>',unsafe_allow_html=True)
+
+
 def rank_medal(rank):
     """Presentation-only podium medals; ranking arithmetic is unchanged."""
     return {1:'🥇',2:'🥈',3:'🥉'}.get(int(rank),str(int(rank)))
@@ -399,12 +414,12 @@ with main_col:
             labels={int(r.player_id):f"#{int(r['rank'])}  ·  {r['name']}" for _,r in ranked.iterrows()}
             chosen=st.selectbox('Choose a batter',ids,format_func=lambda x:labels.get(x,str(x)))
             r=ranked.set_index('player_id').loc[chosen]
-            m1,m2=st.columns(2,gap='medium')
-            m1.metric('SR Improvement',f'{r.improvement_pct:+.2f}%')
-            m2.metric('Pressure SR',f'{r.pressure_sr:.2f}')
-            m3,m4=st.columns(2,gap='medium')
-            m3.metric('Pressure situation score /180',f'{r.pressure_six_score:.0f}')
-            m4.metric('Final /200',f'{r.final_score_200:.2f}')
+            spotlight_metrics([
+                ('SR Improvement',f'{r.improvement_pct:+.2f}%'),
+                ('Pressure SR',f'{r.pressure_sr:.2f}'),
+                ('Pressure situation score /180',f'{r.pressure_six_score:.0f}'),
+                ('Final /200',f'{r.final_score_200:.2f}')
+            ])
             rating_bar(r.composite,r['rank'],len(ranked))
     elif page=='Methodology':
         heading('How the rankings are built')
@@ -504,10 +519,10 @@ with main_col:
             heading('Bowler spotlight')
             selected=st.selectbox('Choose bowler',bowl_rank.index.tolist(),format_func=lambda pid:f"#{int(bowl_rank.loc[pid,'rank'])} · {bowl_rank.loc[pid,'name']}")
             b=bowl_rank.loc[selected]
-            q1,q2=st.columns(2,gap='medium')
-            q1.metric('Economy Improvement',f'{b.economy_improvement_pct:+.2f}%')
-            q2.metric('Pressure economy',f'{b.pressure_economy:.2f}')
-            q3,q4=st.columns(2,gap='medium')
-            q3.metric('Pressure situation score',f'{b.pressure_six_points:.1f}')
-            q4.metric('Composite Score /200',f'{b.final_score_200:.2f}')
+            spotlight_metrics([
+                ('Economy Improvement',f'{b.economy_improvement_pct:+.2f}%'),
+                ('Pressure economy',f'{b.pressure_economy:.2f}'),
+                ('Pressure situation score',f'{b.pressure_six_points:.1f}'),
+                ('Composite Score /200',f'{b.final_score_200:.2f}')
+            ])
             st.caption('All bowling scores are calculated from the original CSV deliveries, using the six-situation economy methodology and 40/60 situation-pressure weighting.')
