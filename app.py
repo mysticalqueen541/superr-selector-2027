@@ -92,12 +92,22 @@ hr{border-color:#34415D!important}
 [data-testid='stHorizontalBlock']>[data-testid='stColumn']{min-width:0!important}
 @media(max-width:1100px){.block-container{padding:1rem 1.1rem 3rem!important}.rr-table{min-width:790px}}
 [data-testid="stMetricValue"]{overflow-wrap:break-word!important;white-space:normal!important;line-height:1.2!important;font-size:clamp(1.08rem,1.5vw,1.65rem)!important;max-width:100%!important}
-[data-testid="stMetric"]{min-width:0!important;min-height:152px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+[data-testid="stMetric"]{min-width:0!important;min-height:100px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
 [data-testid="stMetricValue"]>div{white-space:normal!important;overflow-wrap:break-word!important}
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p{font-size:.78rem!important;line-height:1.45!important;color:#B6C5E2!important}
 .delta-up{color:#47D79B!important;font-weight:800;white-space:nowrap}.delta-down{color:#FF647E!important;font-weight:800;white-space:nowrap}.delta-flat{color:#C6D2E7!important;font-weight:700;white-space:nowrap}
 @media(max-width:1250px){[data-testid="stMetricValue"]{font-size:1.1rem!important}[data-testid="stMetric"]{padding:12px!important}}
 
+/* Compact and aligned player spotlight metrics on desktop and mobile. */
+[data-testid="stMetric"]{min-height:96px!important;padding:12px 16px!important;justify-content:center!important}
+[data-testid="stMetricLabel"]{margin-bottom:4px!important}
+[data-testid="stMetricLabel"] p{font-size:clamp(.72rem,.82vw,.88rem)!important;line-height:1.3!important}
+[data-testid="stMetricValue"]{font-size:clamp(1.05rem,1.5vw,1.42rem)!important;line-height:1.12!important}
+@media(max-width:760px){
+  [data-testid="stMetric"]{min-height:82px!important;padding:10px 12px!important}
+  [data-testid="stMetricValue"]{font-size:1.08rem!important}
+  [data-testid="stMetricLabel"] p{font-size:.74rem!important}
+}
 /* All four headline cards share a single sizing and alignment system. */
 /* Descriptions appear only when the Streamlit help (?) icon is clicked/hovered. */
 [data-testid="stSidebar"] [data-testid="stTooltipIcon"]{color:#DDE7FF!important}
