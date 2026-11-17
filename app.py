@@ -191,7 +191,6 @@ h1,h2,h3,h4,.eyebrow,.section-head,.pressure-title,.leader-label,[data-testid='s
 
 # Controls are in the LEFT sidebar; only Format appears at the top RIGHT.
 with st.sidebar:
-    st.caption('CSV ranking engine · retirement and nationality filters for final rankings')
     st.markdown('### Analysis controls')
 
     exclude_pak_bang=st.checkbox('Exclude Pakistan & Bangladesh players',value=True,
@@ -213,7 +212,6 @@ with header_left:
     st.title('Superr Selector')
 with header_right:
     fmt=st.selectbox('Format',['All','T20s','IPL'],key='competition_top',width='stretch')
-st.caption(f'Live ranking filters · Minimum pressure balls: {threshold} · Minimum balls per pressure situation: {situation_threshold} · Rankings update automatically')
 cards_slot=st.empty()
 main_col=st.container()
 try:
@@ -227,12 +225,6 @@ except Exception as exc:
     st.exception(exc)
     st.stop()
 
-# Live reproducibility check: show the actual outputs and audit rule being executed.
-st.caption(
-    f'CSV-only engine · audit exclusions: {audited_exclusions} matches · '
-    f'Batting leader: {ranked.iloc[0]["name"] if not ranked.empty else "none"} · '
-    f'Bowling leader: {bowl_rank.iloc[0]["name"] if not bowl_rank.empty else "none"}'
-)
 # Check score arithmetic and rank ordering without hardcoding a winner.
 for label, table in [('Batting',ranked),('Bowling',bowl_rank)]:
     if table.empty:
@@ -374,7 +366,6 @@ def top_ten_table(data):
         <th>Pressure SR</th><th>Overall SR</th><th>SR Improvement</th><th>Final score /200</th>
         </tr></thead><tbody>'''+''.join(rows)+'</tbody></table></div>',unsafe_allow_html=True)
 
-st.caption('To save this exact dashboard page as PDF: use your browser\'s Print command and choose Save as PDF. Switch between Batters and Bowlers to export each page.')
 
 with main_col:
     if page=='Batters':
